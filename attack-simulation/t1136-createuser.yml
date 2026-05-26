@@ -1,0 +1,14 @@
+- id: 8f2a1c4d-3b7e-4a91-9d6f-1e2c3b4a5d60
+  name: Create local user account
+  description: Creates a new local user (T1136 Create Account)
+  tactic: persistence
+  technique:
+    attack_id: T1136
+    name: Create Account
+  platforms:
+    linux:
+      sh:
+        command: |
+          useradd caldera_t1136 && echo "user created"
+        cleanup: |
+          userdel -r caldera_t1136

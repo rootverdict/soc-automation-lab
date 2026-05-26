@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 640" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#475569"/>
+    </marker>
+    <style>
+      .title  { font-size: 26px; font-weight: 700; fill: #0f172a; }
+      .sub    { font-size: 13px; fill: #64748b; }
+      .stage  { font-size: 12px; font-weight: 700; fill: #94a3b8; letter-spacing: 1px; }
+      .box    { rx: 10; ry: 10; stroke-width: 2; }
+      .tool   { font-size: 16px; font-weight: 700; }
+      .detail { font-size: 11px; }
+      .mitre  { font-size: 10.5px; font-weight: 700; fill: #b91c1c; }
+      .edge   { stroke: #475569; stroke-width: 2; fill: none; }
+      .vlabel { font-size: 11px; font-weight: 700; fill: #475569; }
+      .verdict{ font-size: 11px; font-weight: 700; }
+    </style>
+  </defs>
+
+  <rect width="1180" height="640" fill="#f8fafc"/>
+
+  <!-- Title -->
+  <text x="40" y="48" class="title">SOC Automation Lab — Architecture</text>
+  <text x="40" y="70" class="sub">Attack emulation → Detection → SOAR triage &amp; enrichment → Forensic validation</text>
+
+  <!-- Stage labels -->
+  <text x="95"  y="118" class="stage" text-anchor="middle">ATTACK</text>
+  <text x="330" y="118" class="stage" text-anchor="middle">DETECTION</text>
+  <text x="620" y="118" class="stage" text-anchor="middle">AUTOMATION / TRIAGE</text>
+  <text x="1020" y="118" class="stage" text-anchor="middle">FORENSICS</text>
+
+  <!-- Caldera -->
+  <rect x="30" y="140" width="130" height="110" class="box" fill="#fef2f2" stroke="#ef4444"/>
+  <text x="95" y="170" class="tool" fill="#b91c1c" text-anchor="middle">Caldera</text>
+  <text x="95" y="192" class="detail" fill="#7f1d1d" text-anchor="middle">Adversary</text>
+  <text x="95" y="207" class="detail" fill="#7f1d1d" text-anchor="middle">emulation</text>
+  <text x="95" y="228" class="detail" fill="#7f1d1d" text-anchor="middle">T1136 / T1110</text>
+  <text x="95" y="243" class="detail" fill="#7f1d1d" text-anchor="middle">T1548.003</text>
+
+  <!-- Wazuh -->
+  <rect x="240" y="140" width="180" height="110" class="box" fill="#eff6ff" stroke="#3b82f6"/>
+  <text x="330" y="170" class="tool" fill="#1d4ed8" text-anchor="middle">Wazuh SIEM</text>
+  <text x="330" y="192" class="detail" fill="#1e3a8a" text-anchor="middle">5 custom rules</text>
+  <text x="330" y="207" class="detail" fill="#1e3a8a" text-anchor="middle">atomic + correlation</text>
+  <text x="330" y="225" class="mitre" text-anchor="middle">T1110 · T1136 · T1548.003</text>
+  <text x="330" y="242" class="detail" fill="#1e3a8a" text-anchor="middle">forward level ≥ 7</text>
+
+  <!-- n8n big container -->
+  <rect x="470" y="140" width="320" height="380" rx="12" ry="12" fill="#faf5ff" stroke="#a855f7" stroke-width="2"/>
+  <text x="630" y="168" class="tool" fill="#7e22ce" text-anchor="middle">n8n — SOAR Workflow</text>
+
+  <!-- n8n inner nodes -->
+  <rect x="495" y="185" width="270" height="38" rx="8" fill="#fff" stroke="#c084fc"/>
+  <text x="630" y="209" class="detail" fill="#581c87" text-anchor="middle">Webhook → IOC extraction &amp; normalization</text>
+
+  <rect x="495" y="233" width="270" height="38" rx="8" fill="#fff" stroke="#c084fc"/>
+  <text x="630" y="257" class="detail" fill="#581c87" text-anchor="middle">RFC1918 filter — public vs private IP</text>
+
+  <!-- private branch -->
+  <rect x="495" y="285" width="125" height="50" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+  <text x="557" y="305" class="detail" fill="#475569" text-anchor="middle">private →</text>
+  <text x="557" y="321" class="verdict" fill="#475569" text-anchor="middle">INTERNAL_SKIP</text>
+
+  <!-- public → VT -->
+  <rect x="640" y="285" width="125" height="50" rx="8" fill="#fff" stroke="#c084fc"/>
+  <text x="702" y="305" class="detail" fill="#581c87" text-anchor="middle">public →</text>
+  <text x="702" y="321" class="detail" fill="#581c87" text-anchor="middle">VirusTotal API</text>
+
+  <!-- malicious decision -->
+  <rect x="640" y="350" width="125" height="44" rx="8" fill="#fff" stroke="#c084fc"/>
+  <text x="702" y="377" class="detail" fill="#581c87" text-anchor="middle">malicious &gt; 0 ?</text>
+
+  <!-- malicious verdict -->
+  <rect x="640" y="410" width="125" height="44" rx="8" fill="#fef2f2" stroke="#ef4444"/>
+  <text x="702" y="430" class="verdict" fill="#b91c1c" text-anchor="middle">MALICIOUS</text>
+  <text x="702" y="446" class="detail" fill="#7f1d1d" text-anchor="middle">→ email analyst</text>
+
+  <!-- clean verdict -->
+  <rect x="495" y="410" width="125" height="44" rx="8" fill="#f0fdf4" stroke="#22c55e"/>
+  <text x="557" y="437" class="verdict" fill="#15803d" text-anchor="middle">CLEAN</text>
+
+  <!-- email out -->
+  <rect x="640" y="470" width="125" height="38" rx="8" fill="#fffbeb" stroke="#f59e0b"/>
+  <text x="702" y="494" class="detail" fill="#92400e" text-anchor="middle">✉ Analyst email</text>
+
+  <!-- Velociraptor -->
+  <rect x="930" y="140" width="180" height="110" class="box" fill="#ecfeff" stroke="#06b6d4"/>
+  <text x="1020" y="170" class="tool" fill="#0e7490" text-anchor="middle">Velociraptor</text>
+  <text x="1020" y="192" class="detail" fill="#155e75" text-anchor="middle">Endpoint DFIR</text>
+  <text x="1020" y="209" class="detail" fill="#155e75" text-anchor="middle">VQL artifact</text>
+  <text x="1020" y="227" class="detail" fill="#155e75" text-anchor="middle">Linux.Sys.Users</text>
+  <text x="1020" y="244" class="detail" fill="#155e75" text-anchor="middle">forensic confirm</text>
+
+  <!-- main edges -->
+  <line x1="160" y1="195" x2="238" y2="195" class="edge" marker-end="url(#arrow)"/>
+  <line x1="420" y1="195" x2="468" y2="195" class="edge" marker-end="url(#arrow)"/>
+  <text x="444" y="186" class="vlabel" text-anchor="middle">alert</text>
+
+  <!-- inner vertical flow -->
+  <line x1="630" y1="223" x2="630" y2="231" class="edge" marker-end="url(#arrow)"/>
+  <line x1="630" y1="271" x2="630" y2="280" class="edge"/>
+  <line x1="557" y1="280" x2="557" y2="283" class="edge" marker-end="url(#arrow)"/>
+  <line x1="702" y1="280" x2="702" y2="283" class="edge" marker-end="url(#arrow)"/>
+  <path d="M557 280 L557 276 L702 276 L702 280" class="edge"/>
+  <line x1="702" y1="335" x2="702" y2="348" class="edge" marker-end="url(#arrow)"/>
+  <line x1="702" y1="394" x2="702" y2="408" class="edge" marker-end="url(#arrow)"/>
+  <text x="725" y="406" class="vlabel">yes</text>
+  <path d="M640 372 L560 372 L560 408" class="edge" marker-end="url(#arrow)"/>
+  <text x="575" y="404" class="vlabel">no</text>
+  <line x1="702" y1="454" x2="702" y2="468" class="edge" marker-end="url(#arrow)"/>
+
+  <!-- n8n to velociraptor -->
+  <path d="M790 300 L860 300 L860 195 L928 195" class="edge" marker-end="url(#arrow)"/>
+  <text x="868" y="186" class="vlabel" text-anchor="middle">trigger</text>
+
+  <!-- footer: hosts -->
+  <rect x="30" y="555" width="1080" height="60" rx="10" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text x="50" y="580" class="stage">LAB ENVIRONMENT</text>
+  <text x="50" y="600" class="detail" fill="#334155">wazuh-server (192.168.100.10): Wazuh manager · indexer · dashboard   |   soc-endpoint (192.168.100.20): Wazuh agent · n8n · Caldera · Velociraptor</text>
+  <text x="50" y="600" class="detail" fill="#334155" dy="0"></text>
+  <text x="1100" y="600" class="detail" fill="#64748b" text-anchor="end">Ubuntu 22.04 · VMware · host-only + NAT</text>
+</svg>

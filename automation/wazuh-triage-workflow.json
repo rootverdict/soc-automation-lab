@@ -1,0 +1,351 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "wazuh",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "2be822c6-10a0-452b-a1c8-0704aa5212fb",
+      "name": "Webhook",
+      "webhookId": "5c19fecd-af03-4c19-90c1-016a12b0d30c"
+    },
+    {
+      "parameters": {
+        "jsCode": "const alert = $input.first().json.body || $input.first().json;\nconst srcip = (alert.full_log || \"\").match(/from (\\d+\\.\\d+\\.\\d+\\.\\d+)/);\n\nconst ip = \"45.155.205.233\";   // a commonly-flagged scanner IP; or any IP VT flags\n//const ip = srcip ? srcip[1] : (alert.agent?.ip || null);\n//const ip = \"8.8.8.8\";\n// RFC1918 / private check\nconst isPrivate = !ip || /^(10\\.|192\\.168\\.|172\\.(1[6-9]|2\\d|3[01])\\.)/.test(ip);\n\nreturn [{\n  json: {\n    rule_id: alert.rule_id,\n    description: alert.description,\n    level: alert.level,\n    mitre: alert.mitre,\n    agent: alert.agent,\n    ioc_ip: ip,\n    is_private: isPrivate\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "6260c10b-29df-43c3-8920-1e30d88b6e59",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d2031bc9-87c4-444a-b144-465db9a5a1d0",
+              "leftValue": "={{ $json.is_private }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        416,
+        0
+      ],
+      "id": "eef8a967-80e0-4490-baff-8086ce28073c",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "url": "=https://www.virustotal.com/api/v3/ip_addresses/{{ $json.ioc_ip }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-apikey",
+              "value": "YOUR_VT_API_KEY"
+            },
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        624,
+        -96
+      ],
+      "id": "071a2039-87ea-4906-bf55-9fad2d22a3fa",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5d69b808-8b20-45a4-9cfc-6587da150508",
+              "name": "verdict ",
+              "value": "INTERNAL_SKIP_ENRICHMENT",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        624,
+        96
+      ],
+      "id": "e57f58cf-e767-4aa3-bf33-46133619fdf1",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "84df901d-38ea-4f46-804e-83d22f28a821",
+              "leftValue": "={{ $json.data.attributes.last_analysis_stats.malicious }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        832,
+        -96
+      ],
+      "id": "5d1d5744-bd9a-4224-bd11-ede9fa60d15d",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1bfdcbed-5bf9-4d2a-914c-26b577790da5",
+              "name": "verdict",
+              "value": "MALICIOUS",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1040,
+        -192
+      ],
+      "id": "918c77a8-ed20-4292-bdb3-c71c2e00fd37",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7a5f64f3-8dc7-45e8-bba5-92b729c25d67",
+              "name": "verdict",
+              "value": "CLEAN",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1040,
+        0
+      ],
+      "id": "306c574a-aaf1-40e5-b16a-a01d9b63d1b2",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "fromEmail": "YOUR_EMAIL@gmail.com",
+        "toEmail": "YOUR_EMAIL@gmail.com",
+        "subject": "=[SOC ALERT] Malicious IOC - {{ $json.description }}",
+        "emailFormat": "text",
+        "text": "=SOC AUTOMATED ALERT - MALICIOUS VERDICT\n\nRule: {{ $('Code in JavaScript').item.json.rule_id }} - {{ $('Code in JavaScript').item.json.description }}\nSeverity: {{ $('Code in JavaScript').item.json.level }}\nMITRE: {{ $('Code in JavaScript').item.json.mitre.id }}\nAgent: {{ $('Code in JavaScript').item.json.agent.name }} ({{ $('Code in JavaScript').item.json.agent.ip }})\nIOC IP: {{ $('Code in JavaScript').item.json.ioc_ip }}\nVirusTotal malicious count: {{ $('HTTP Request').item.json.data.attributes.last_analysis_stats.malicious }}\n\nVerdict: MALICIOUS - analyst review required.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1248,
+        -192
+      ],
+      "id": "8b344ae5-1f27-478f-980e-dacb09ea40dd",
+      "name": "Send an Email",
+      "webhookId": "2de5c30a-b8df-45c4-89d8-3d7811ce4dc2",
+      "credentials": {
+        "smtp": {
+          "id": "SXvIbaVypglBXS3F",
+          "name": "SMTP account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "192.168.100.20:5678",
+            "user-agent": "python-requests/2.32.2",
+            "accept-encoding": "gzip, deflate",
+            "accept": "*/*",
+            "connection": "keep-alive",
+            "content-length": "302",
+            "content-type": "application/json"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "rule_id": "5901",
+            "description": "New group added to the system.",
+            "level": 8,
+            "mitre": {},
+            "agent": {
+              "id": "002",
+              "name": "endpoint",
+              "ip": "192.168.100.20"
+            },
+            "full_log": "May 26 10:08:31 endpoint useradd[20166]: new group: name=webhooktest11, GID=1013",
+            "timestamp": "2026-05-26T10:08:33.152+0000"
+          },
+          "webhookUrl": "http://localhost:5678/webhook/wazuh",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Send an Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "b09907e7-73bc-4eb8-8e91-dae1ebb736d1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "REDACTED"
+  },
+  "id": "pXPg7TSWxdOgUn82",
+  "tags": []
+}
