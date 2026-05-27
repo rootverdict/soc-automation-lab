@@ -6,8 +6,6 @@ A single orchestrated run demonstrating the full pipeline: attack → detection 
 
 [![End-to-End Pipeline Demo](https://img.shields.io/badge/Watch%20Demo-YouTube-red?logo=youtube)](https://youtu.be/5ahlclbnNrE)
 
-> Replace `YOUR_VIDEO_ID_HERE` with the actual YouTube video ID after uploading.
-
 ## The scenario
 
 An attacker creates a local user account on the monitored endpoint (a common persistence action, MITRE T1136). The pipeline detects it, triages it automatically, and confirms it forensically — with no manual steps between the attack and the forensic collection.
