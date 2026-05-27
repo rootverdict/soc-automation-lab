@@ -1,4 +1,4 @@
-# Demo — End-to-End Walkthrough
+# Demo - End-to-End Walkthrough
 
 A single orchestrated run demonstrating the full pipeline: attack → detection → automated triage → forensic validation. This is the proof that the components work together, not just individually.
 
