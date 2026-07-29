@@ -1,0 +1,11 @@
+<!--
+  Ship the auditd log to Wazuh so the audit rules in auditd-soc-lab.rules
+  produce alerts. Place inside ossec.conf on the endpoint agent.
+  Wazuh's built-in audit decoders + ruleset parse these; the custom keys
+  (-k reverse_shell, service_control, history_tamper, recon_tool) appear in
+  the alert data for triage.
+-->
+<localfile>
+  <location>/var/log/audit/audit.log</location>
+  <log_format>audit</log_format>
+</localfile>

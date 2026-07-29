@@ -1,0 +1,44 @@
+<!--
+  File Integrity Monitoring (syscheck) for the SOC Automation Lab.
+  Place inside the <syscheck> block of ossec.conf on the endpoint agent.
+  realtime="yes" gives near-instant alerts; report_changes="yes" captures the
+  diff (what changed), which the casebook cases rely on as evidence.
+
+  Backs casebook cases:
+    CASE-009  critical auth files modified (sshd_config, passwd, sudoers)
+    CASE-010  web shell dropped in the web root
+    CASE-013  cron-based persistence
+    CASE-016  shell history cleared / tampered
+    CASE-018  malicious file dropped (hash then checked against VirusTotal)
+-->
+<syscheck>
+  <disabled>no</disabled>
+
+  <!-- CASE-009: critical authentication / privilege config -->
+  <directories check_all="yes" realtime="yes" report_changes="yes">/etc/ssh</directories>
+  <directories check_all="yes" realtime="yes" report_changes="yes">/etc/sudoers.d</directories>
+  <directories check_all="yes" realtime="yes" report_changes="yes">/etc/pam.d</directories>
+  <directories check_all="yes" realtime="yes">/etc/passwd,/etc/shadow,/etc/sudoers</directories>
+
+  <!-- CASE-010 + CASE-018: web root (new files here => web shell / dropped payload) -->
+  <directories check_all="yes" realtime="yes" report_changes="yes">/var/www/html</directories>
+
+  <!-- CASE-013: cron persistence locations -->
+  <directories check_all="yes" realtime="yes" report_changes="yes">/etc/cron.d</directories>
+  <directories check_all="yes" realtime="yes" report_changes="yes">/etc/cron.daily,/etc/cron.hourly</directories>
+  <directories check_all="yes" realtime="yes">/etc/crontab</directories>
+  <directories check_all="yes" realtime="yes">/var/spool/cron</directories>
+
+  <!-- CASE-016: shell history (deletion / truncation shows as a FIM change) -->
+  <directories check_all="yes" realtime="yes">/root/.bash_history</directories>
+  <directories check_all="yes" realtime="yes">/home</directories>
+
+  <!-- Reduce noise: ignore volatile paths under the monitored trees -->
+  <ignore>/var/www/html/cache</ignore>
+
+  <!--
+    CASE-018 depends on file hashes being computed so the VirusTotal
+    integration has something to look up. check_all="yes" above already
+    records md5/sha1/sha256 for changed files.
+  -->
+</syscheck>

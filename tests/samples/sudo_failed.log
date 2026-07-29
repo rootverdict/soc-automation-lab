@@ -1,0 +1,1 @@
+Jan 15 10:05:00 soc-endpoint sudo:  attacker : user NOT in sudoers ; TTY=pts/0 ; PWD=/home/attacker ; USER=root ; COMMAND=/bin/bash

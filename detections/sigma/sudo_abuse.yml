@@ -1,0 +1,55 @@
+title: Failed Sudo Attempt
+id: d52162ea-cf00-43ff-b410-d02107836c8e
+status: experimental
+description: >
+  A single failed sudo attempt. Wazuh equivalent: local rule 100010
+  (parent 5401 - "Failed attempt to run sudo"). Note: parent must be 5401,
+  not 5403 (successful first-time sudo) - see detections/README.md.
+references:
+  - https://attack.mitre.org/techniques/T1548/003/
+author: SOC Automation Lab
+date: 2026-07-29
+logsource:
+  product: linux
+  service: sudo
+detection:
+  selection:
+    message|contains:
+      - 'authentication failure'
+      - 'incorrect password attempt'
+      - 'user NOT in sudoers'
+  condition: selection
+falsepositives:
+  - Legitimate user mistyping their password at a sudo prompt
+level: medium
+tags:
+  - attack.privilege-escalation
+  - attack.t1548.003
+---
+title: Repeated Failed Sudo - Privilege Abuse
+id: ead1c03f-3fa5-4b38-8571-04594eac10ae
+status: experimental
+description: >
+  Four or more failed sudo attempts within 120 seconds - repeated privilege
+  abuse rather than a single fat-finger. Wazuh equivalent: local rule 100011
+  (frequency=4, timeframe=120). No source IP - drives a host action, not a
+  firewall block.
+references:
+  - https://attack.mitre.org/techniques/T1548/003/
+author: SOC Automation Lab
+date: 2026-07-29
+correlation:
+  type: event_count
+  rules:
+    - d52162ea-cf00-43ff-b410-d02107836c8e
+  group-by:
+    - user
+  timespan: 2m
+  condition:
+    gte: 4
+falsepositives:
+  - An admin repeatedly mistyping under an expired credential (verify with asset owner)
+level: high
+tags:
+  - attack.privilege-escalation
+  - attack.t1548.003

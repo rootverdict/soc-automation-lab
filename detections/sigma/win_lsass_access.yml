@@ -1,0 +1,39 @@
+title: Suspicious LSASS Process Access (Credential Dumping)
+id: 4db1bbe2-b442-4311-8f3c-275bcdf027c1
+status: experimental
+description: >
+  A process opened a handle to lsass.exe with an access mask that permits
+  memory reading (0x1010 / 0x1410 / 0x143a), consistent with credential
+  dumping. Source: Sysmon EID 10 (process access). Known-good accessors are
+  filtered out. Backs casebook CASE-005.
+references:
+  - https://attack.mitre.org/techniques/T1003/001/
+author: SOC Automation Lab
+date: 2026-07-29
+logsource:
+  product: windows
+  category: process_access
+detection:
+  selection:
+    EventID: 10
+    TargetImage|endswith: '\lsass.exe'
+    GrantedAccess:
+      - '0x1010'
+      - '0x1410'
+      - '0x143a'
+      - '0x1438'
+      - '0x1fffff'
+  filter_known_good:
+    SourceImage|endswith:
+      - '\wininit.exe'
+      - '\csrss.exe'
+      - '\services.exe'
+      - '\MsMpEng.exe'          # Defender
+      - '\Windows Defender\'
+  condition: selection and not filter_known_good
+falsepositives:
+  - EDR / AV / backup agents legitimately reading process memory (tune per environment)
+level: high
+tags:
+  - attack.credential-access
+  - attack.t1003.001

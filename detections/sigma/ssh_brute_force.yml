@@ -1,0 +1,55 @@
+title: SSH Authentication Failure
+id: ab1f58fb-fb13-4bec-bda9-2a39c30678aa
+status: experimental
+description: >
+  Single SSH authentication failure. Low-signal on its own; the paired
+  correlation rule escalates when many failures come from one source.
+  Wazuh equivalent: local rule 100001 (parents 5710/5716/5760).
+references:
+  - https://attack.mitre.org/techniques/T1110/
+author: SOC Automation Lab
+date: 2026-07-29
+logsource:
+  product: linux
+  service: sshd
+detection:
+  selection:
+    - message|contains: 'Failed password'
+    - message|contains: 'Invalid user'
+    - message|contains: 'authentication failure'
+  condition: selection
+falsepositives:
+  - A user mistyping a password once or twice
+  - Automation with stale credentials
+level: low
+tags:
+  - attack.credential-access
+  - attack.t1110
+---
+title: SSH Brute Force - Multiple Failures From Single Source
+id: 0dbcc15a-1d1e-43c1-b12f-56fccf919aac
+status: experimental
+description: >
+  Five or more SSH authentication failures from the same source IP within
+  120 seconds - the brute-force pattern, not a single mistyped password.
+  Wazuh equivalent: local rule 100002 (frequency=5, timeframe=120,
+  same_source_ip).
+references:
+  - https://attack.mitre.org/techniques/T1110/
+author: SOC Automation Lab
+date: 2026-07-29
+correlation:
+  type: event_count
+  rules:
+    - ab1f58fb-fb13-4bec-bda9-2a39c30678aa
+  group-by:
+    - src_ip
+  timespan: 2m
+  condition:
+    gte: 5
+falsepositives:
+  - Internal vulnerability scanner or misconfigured service hammering SSH (see CASE-002)
+level: high
+tags:
+  - attack.credential-access
+  - attack.t1110

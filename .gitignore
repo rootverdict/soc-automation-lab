@@ -1,0 +1,11 @@
+# Never commit secrets
+*.key
+*_secret*
+*credential*
+.env
+# Wazuh / system files not meant for the repo
+client.keys
+*.pem
+
+# Personal planning / scratch — not part of the public repo
+aryan/

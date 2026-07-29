@@ -1,0 +1,53 @@
+<!--
+  Wazuh Active-Response configuration
+  Add these blocks to /var/ossec/etc/ossec.conf on the MANAGER, then:
+      sudo systemctl restart wazuh-manager
+
+  firewall-drop is a built-in Wazuh AR command (uses iptables on Linux agents).
+  It keys off the alert's srcip, so it is only bound to rules that HAVE a srcip.
+-->
+
+<!-- 1) Do not lock yourself out. Whitelist admin/management + gateway IPs. -->
+<!--    (Global setting, lives inside <ossec_config>.)                     -->
+<global>
+  <white_list>127.0.0.1</white_list>
+  <white_list>192.168.100.1</white_list>   <!-- gateway -->
+  <white_list>192.168.100.10</white_list>  <!-- wazuh-server / admin -->
+  <!-- add your host / management workstation IP here BEFORE enabling response -->
+</global>
+
+<!-- 2) Network attack: SSH brute-force (rule 100002) -> drop the source IP. -->
+<!--    location=local  => the drop runs on the agent that generated the alert -->
+<!--    timeout=600     => auto-unblock after 10 min (false-positive rollback)  -->
+<active-response>
+  <command>firewall-drop</command>
+  <location>local</location>
+  <rules_id>100002</rules_id>
+  <timeout>600</timeout>
+</active-response>
+
+<!-- 3) Local privilege abuse: repeated failed sudo (rule 100011).            -->
+<!--    NOTE: a sudo event has NO srcip, so firewall-drop cannot apply here.   -->
+<!--    Register a custom host-action command instead (see sudo-abuse-response.sh). -->
+<command>
+  <name>sudo-abuse-response</name>
+  <executable>sudo-abuse-response.sh</executable>
+  <timeout_allowed>no</timeout_allowed>
+</command>
+
+<active-response>
+  <command>sudo-abuse-response</command>
+  <location>local</location>
+  <rules_id>100011</rules_id>
+</active-response>
+
+<!--
+  Agent side (soc-endpoint /var/ossec/etc/ossec.conf) must allow AR:
+
+      <active-response>
+        <disabled>no</disabled>
+      </active-response>
+
+  Deploy the custom script to the AGENT:
+      /var/ossec/active-response/bin/sudo-abuse-response.sh   (chmod 750, owner root:wazuh)
+-->

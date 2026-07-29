@@ -1,0 +1,1 @@
+Jan 15 10:10:00 soc-endpoint useradd[3201]: new user: name=e2e_attacker, UID=1015, GID=1015, home=/home/e2e_attacker, shell=/bin/bash

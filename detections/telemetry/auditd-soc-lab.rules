@@ -1,0 +1,43 @@
+# auditd rules for the SOC Automation Lab
+# Install: copy to /etc/audit/rules.d/soc-lab.rules on the endpoint, then:
+#   augenrules --load && auditctl -l
+# Wazuh reads /var/log/audit/audit.log via the localfile in
+# ossec-localfile-auditd.xml and its built-in audit decoders/rules.
+#
+# Backs casebook cases:
+#   CASE-014  reverse shell / suspicious outbound exec
+#   CASE-015  logging or monitoring service stopped (defense evasion)
+#   CASE-016  shell history cleared (anti-forensics)
+#   CASE-017  recon / dual-use tool installed
+
+## CASE-014 — execution of shells and network tools often used for reverse shells
+-a always,exit -F arch=b64 -S execve -F exe=/usr/bin/nc -k reverse_shell
+-a always,exit -F arch=b64 -S execve -F exe=/bin/nc -k reverse_shell
+-a always,exit -F arch=b64 -S execve -F exe=/usr/bin/ncat -k reverse_shell
+-a always,exit -F arch=b64 -S execve -F exe=/usr/bin/socat -k reverse_shell
+# bash invoked interactively (bash -i) is a common reverse-shell primitive;
+# the audit record captures argv so an analyst can confirm the -i /dev/tcp pattern.
+-a always,exit -F arch=b64 -S execve -F exe=/usr/bin/bash -k shell_exec
+
+## CASE-015 — stopping logging/monitoring services (defense evasion)
+-a always,exit -F arch=b64 -S execve -F exe=/usr/bin/systemctl -k service_control
+-w /bin/systemctl -p x -k service_control
+-w /var/ossec/bin/wazuh-control -p x -k tamper_wazuh
+-w /etc/audit/ -p wa -k tamper_auditd
+
+## CASE-016 — clearing shell history / anti-forensics
+-w /root/.bash_history -p wa -k history_tamper
+# Per-user history under /home: a recursive auditd watch on /home floods on every
+# file write, and auditd -w cannot glob to */.bash_history. Covered instead by FIM
+# (syscheck realtime on /home) - see syscheck-fim.conf.xml. 'history -c' runs
+# in-shell (no exec), so file write/truncation events are the reliable signal.
+
+## CASE-017 — installing recon / dual-use tooling
+-w /usr/bin/apt -p x -k package_install
+-w /usr/bin/apt-get -p x -k package_install
+-w /usr/bin/dpkg -p x -k package_install
+-a always,exit -F arch=b64 -S execve -F exe=/usr/bin/nmap -k recon_tool
+-a always,exit -F arch=b64 -S execve -F exe=/usr/bin/masscan -k recon_tool
+
+## Make the config immutable last (optional; requires reboot to change)
+# -e 2

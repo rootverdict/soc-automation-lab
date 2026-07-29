@@ -1,0 +1,56 @@
+name: Custom.Remediation.KillProcess
+description: |
+  Collect-then-contain remediation. Given a process name (regex), this artifact
+  FIRST records forensic evidence about matching processes (pid, path, cmdline,
+  hash, owner), THEN — only when DryRun is disabled — kills them.
+
+  DryRun defaults to TRUE, so running the artifact is safe: it reports what it
+  WOULD kill and takes no destructive action until an operator explicitly turns
+  DryRun off. This is the endpoint-level response invoked by the n8n branch on a
+  high-confidence, severity-10 verdict.
+
+  NOTE: verify the `kill()` VQL function is available in your Velociraptor
+  version. If not, use the built-in Windows.Remediation.* / Linux equivalents
+  for the kill/quarantine step and keep this artifact for the evidence pass.
+
+type: CLIENT
+
+parameters:
+  - name: ProcName
+    description: Regex matching the process name(s) to remediate (e.g. "mimikatz|nc|caldera").
+    default: "this_should_match_nothing_by_default"
+  - name: DryRun
+    description: When TRUE (default) only report; when FALSE actually kill.
+    type: bool
+    default: "Y"
+
+sources:
+  - name: Evidence
+    description: Forensic snapshot of matching processes (always runs, non-destructive).
+    query: |
+      SELECT Name,
+             Pid,
+             Ppid,
+             CommandLine,
+             Exe,
+             Username,
+             hash(path=Exe) AS ExeHash,
+             timestamp(epoch=now()) AS CollectedAt
+      FROM pslist()
+      WHERE Name =~ ProcName
+
+  - name: Remediation
+    description: Kills matching processes only when DryRun is disabled.
+    query: |
+      SELECT *
+      FROM if(condition=DryRun,
+        then={
+          SELECT Name, Pid, "WOULD KILL (DryRun)" AS Action
+          FROM pslist()
+          WHERE Name =~ ProcName
+        },
+        else={
+          SELECT Name, Pid, kill(pid=Pid) AS Action
+          FROM pslist()
+          WHERE Name =~ ProcName
+        })

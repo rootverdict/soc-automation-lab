@@ -1,0 +1,65 @@
+title: Encoded / Obfuscated PowerShell Execution
+id: a48b5c41-866c-4fd0-a06a-51cb101ae33f
+status: experimental
+description: >
+  PowerShell script block containing download-cradle or encoding keywords
+  commonly seen in fileless execution. Source: PowerShell Operational log,
+  EID 4104 (script-block logging). Backs casebook CASE-004.
+references:
+  - https://attack.mitre.org/techniques/T1059/001/
+author: SOC Automation Lab
+date: 2026-07-29
+logsource:
+  product: windows
+  service: powershell
+  definition: 'Requires Module and ScriptBlock logging (EID 4104)'
+detection:
+  selection_eid:
+    EventID: 4104
+  selection_keywords:
+    ScriptBlockText|contains:
+      - '-enc'
+      - '-EncodedCommand'
+      - 'IEX'
+      - 'Invoke-Expression'
+      - 'DownloadString'
+      - 'DownloadFile'
+      - 'FromBase64String'
+      - 'Net.WebClient'
+  condition: selection_eid and selection_keywords
+falsepositives:
+  - Legitimate administrative or packaging scripts that base64-encode arguments
+level: high
+tags:
+  - attack.execution
+  - attack.t1059.001
+---
+title: Suspicious PowerShell Command Line
+id: 86aad26d-187b-4b01-9736-b60a8a799389
+status: experimental
+description: >
+  Same keywords observed on the process command line (Sysmon EID 1) as a
+  second signal path when script-block logging is unavailable.
+references:
+  - https://attack.mitre.org/techniques/T1059/001/
+author: SOC Automation Lab
+date: 2026-07-29
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    Image|endswith: '\powershell.exe'
+    CommandLine|contains:
+      - '-enc'
+      - '-EncodedCommand'
+      - 'FromBase64String'
+      - 'DownloadString'
+      - 'Net.WebClient'
+  condition: selection
+falsepositives:
+  - Software deployment tooling invoking encoded PowerShell
+level: high
+tags:
+  - attack.execution
+  - attack.t1059.001

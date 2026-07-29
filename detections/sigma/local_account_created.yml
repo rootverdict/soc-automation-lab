@@ -1,0 +1,27 @@
+title: Local Account Created
+id: 43ab9f70-810a-4d1d-b144-9b5ab90fa40f
+status: experimental
+description: >
+  A new local user account was added to the system. On an endpoint with a
+  fixed user population this is high-signal for persistence. Wazuh
+  equivalent: local rule 100020 (parent 5902 - "New user added").
+references:
+  - https://attack.mitre.org/techniques/T1136/001/
+author: SOC Automation Lab
+date: 2026-07-29
+logsource:
+  product: linux
+  service: auth
+detection:
+  selection:
+    message|contains:
+      - 'new user'
+      - 'useradd'
+      - 'adduser'
+  condition: selection
+falsepositives:
+  - Authorized provisioning / configuration management creating a service account (benign true positive - verify change ticket)
+level: high
+tags:
+  - attack.persistence
+  - attack.t1136.001

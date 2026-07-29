@@ -1,0 +1,106 @@
+<!--
+  Windows detections for the SOC Automation Lab.
+  Telemetry: Sysmon (SwiftOnSecurity config) + PowerShell Operational log,
+  forwarded by the Wazuh agent on two channels:
+    - Microsoft-Windows-Sysmon/Operational
+    - Microsoft-Windows-PowerShell/Operational   (EID 4104 is PowerShell, not Sysmon)
+  Field paths follow Wazuh's Windows decoder: win.system.*, win.eventdata.*
+  Rule IDs use the 1001xx block. Validate each with the matching Atomic Red Team test.
+-->
+
+<!-- T1059.001 - PowerShell (encoded / download-cradle) -->
+<group name="windows,powershell,sysmon,">
+
+  <rule id="100100" level="12">
+    <if_group>powershell</if_group>
+    <field name="win.system.eventID">^4104$</field>
+    <field name="win.eventdata.scriptBlockText" type="pcre2">(?i)(-enc\s|-encodedcommand|frombase64string|downloadstring|downloadfile|iex\s|invoke-expression|net\.webclient)</field>
+    <description>T1059.001: Encoded/obfuscated PowerShell script block on $(win.system.computer)</description>
+    <mitre>
+      <id>T1059.001</id>
+    </mitre>
+    <group>powershell_suspicious,</group>
+  </rule>
+
+  <!-- Second signal path: keywords on the process command line (Sysmon EID 1) -->
+  <rule id="100101" level="10">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.originalFileName" type="pcre2">(?i)powershell(_ise)?\.exe</field>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)(-enc\s|-encodedcommand|frombase64string|downloadstring|net\.webclient)</field>
+    <description>T1059.001: Suspicious PowerShell command line on $(win.system.computer)</description>
+    <mitre>
+      <id>T1059.001</id>
+    </mitre>
+    <group>powershell_suspicious,</group>
+  </rule>
+
+</group>
+
+<!-- T1053.005 - Scheduled task persistence -->
+<group name="windows,sysmon,scheduled_task,">
+
+  <rule id="100110" level="10">
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.originalFileName" type="pcre2">(?i)schtasks\.exe</field>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)/create</field>
+    <description>T1053.005: Scheduled task created via schtasks.exe on $(win.system.computer)</description>
+    <mitre>
+      <id>T1053.005</id>
+    </mitre>
+  </rule>
+
+  <!-- Independent confirmation from the Security log (task registered) -->
+  <rule id="100111" level="8">
+    <if_group>windows_security</if_group>
+    <field name="win.system.eventID">^4698$</field>
+    <description>T1053.005: Scheduled task registered (Security EID 4698) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1053.005</id>
+    </mitre>
+  </rule>
+
+</group>
+
+<!-- T1547.001 - Registry Run-key persistence -->
+<group name="windows,sysmon,">
+
+  <rule id="100120" level="10">
+    <if_group>sysmon_event_13</if_group>
+    <field name="win.eventdata.targetObject" type="pcre2">(?i)\\Software\\(Wow6432Node\\)?Microsoft\\Windows\\CurrentVersion\\Run(Once)?\\</field>
+    <description>T1547.001: Registry Run-key persistence value set on $(win.system.computer)</description>
+    <mitre>
+      <id>T1547.001</id>
+    </mitre>
+  </rule>
+
+</group>
+
+<!-- T1003.001 - LSASS access (credential dumping) -->
+<group name="windows,sysmon,">
+
+  <!-- Detection: a suspicious access mask against lsass.exe -->
+  <rule id="100131" level="12">
+    <if_group>sysmon_event_10</if_group>
+    <field name="win.eventdata.targetImage" type="pcre2">(?i)\\lsass\.exe$</field>
+    <field name="win.eventdata.grantedAccess" type="pcre2">(?i)0x(1010|1410|1438|143a|1fffff)</field>
+    <description>T1003.001: Suspicious LSASS access (possible credential dumping) on $(win.system.computer)</description>
+    <mitre>
+      <id>T1003.001</id>
+    </mitre>
+    <group>credential_access,</group>
+  </rule>
+
+  <!--
+    Known-good accessor -> downgrade to level 0 (no alert). This is a CHILD of
+    100131 (if_sid), so the exclusion lives with the detection and Wazuh's
+    "last matching rule wins" resolves deterministically to level 0 - rather
+    than two independent rules racing (a mask like 0x1fffff would otherwise
+    match both). Tune the accessor list per environment (EDR/AV/backup agents).
+  -->
+  <rule id="100132" level="0">
+    <if_sid>100131</if_sid>
+    <field name="win.eventdata.sourceImage" type="pcre2">(?i)\\(wininit|csrss|services|MsMpEng)\.exe$</field>
+    <description>LSASS access by a known-good system process (suppressed)</description>
+  </rule>
+
+</group>

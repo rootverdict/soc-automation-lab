@@ -1,0 +1,27 @@
+title: Registry Run Key Persistence
+id: 0ef4bf40-7a27-4c11-85c1-a0e62178089e
+status: experimental
+description: >
+  A value was written under a CurrentVersion\Run / RunOnce key, the classic
+  autostart persistence location. Source: Sysmon EID 13 (registry value set).
+references:
+  - https://attack.mitre.org/techniques/T1547/001/
+author: SOC Automation Lab
+date: 2026-07-29
+logsource:
+  product: windows
+  category: registry_set
+detection:
+  selection:
+    EventID: 13
+    TargetObject|contains:
+      - '\Software\Microsoft\Windows\CurrentVersion\Run\'
+      - '\Software\Microsoft\Windows\CurrentVersion\RunOnce\'
+      - '\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Run\'
+  condition: selection
+falsepositives:
+  - Legitimate software adding itself to autostart at install time
+level: medium
+tags:
+  - attack.persistence
+  - attack.t1547.001

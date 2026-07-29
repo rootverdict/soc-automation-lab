@@ -1,0 +1,25 @@
+<!--
+  Ship the web-server access log to Wazuh so its built-in web-attack ruleset
+  (SQL injection, directory traversal, web-shell access, etc.) fires.
+  Place inside ossec.conf on the host running the web server.
+
+  Backs casebook cases:
+    CASE-011  SQL injection attempt (rule ~31103/31104/31105 web attack)
+    CASE-010  web-shell access in the request log (pairs with the FIM drop alert)
+
+  Use whichever path matches the installed server.
+-->
+
+<!-- Apache -->
+<localfile>
+  <location>/var/log/apache2/access.log</location>
+  <log_format>apache</log_format>
+</localfile>
+
+<!-- Nginx (uncomment if using nginx instead) -->
+<!--
+<localfile>
+  <location>/var/log/nginx/access.log</location>
+  <log_format>apache</log_format>
+</localfile>
+-->

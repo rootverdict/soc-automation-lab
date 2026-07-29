@@ -1,0 +1,34 @@
+# Sample-event test cases for the custom Wazuh rules.
+# Each case feeds a raw log line through `wazuh-logtest` and asserts which rule
+# fires (or, with expect_no_rule, that a custom rule does NOT fire).
+#
+# Atomic rules are asserted directly. Correlation rules (100002, 100011) depend
+# on frequency/timeframe state across many events and are validated by the live
+# emulation runs, not single-line logtest - noted, not silently skipped.
+#
+# Run: python tests/run_rule_tests.py   (needs /var/ossec/bin/wazuh-logtest)
+
+cases:
+  - name: ssh-auth-failure-fires-100001
+    file: samples/ssh_auth_failure.log
+    expect_rule: "100001"
+
+  # NOTE: rule 100010 keys off base rule 5401 ("Failed attempt to run sudo").
+  # The sample below is a "user NOT in sudoers" denial, which decodes to 5401 in
+  # the current Wazuh ruleset - but sudo base-rule mapping is version-sensitive
+  # (5401 vs 5403 vs 5404 bit us before; see lessons-learned). If this case goes
+  # red on the first CI run, run `wazuh-logtest` on the sample and swap in a line
+  # that produces 5401 for the deployed ruleset - don't loosen rule 100010.
+  - name: failed-sudo-fires-100010
+    file: samples/sudo_failed.log
+    expect_rule: "100010"
+
+  - name: account-created-fires-100020
+    file: samples/useradd_new_user.log
+    expect_rule: "100020"
+
+  # Negative control: a successful, benign login must NOT trip a custom
+  # high-severity rule. If someone loosens 100001, this catches it.
+  - name: successful-login-does-not-fire-custom
+    file: samples/ssh_accepted.log
+    expect_no_rule: "100001"

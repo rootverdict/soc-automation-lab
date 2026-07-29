@@ -1,0 +1,82 @@
+name: detections-ci
+
+# Detection-as-code CI: proves the committed rules are syntactically valid,
+# actually fire on saved sample events, that the portable Sigma rules lint,
+# and that no secrets were committed. Break a rule in a PR and this goes red.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  xml-syntax:
+    name: Wazuh rule XML syntax
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install xmllint
+        run: sudo apt-get update && sudo apt-get install -y libxml2-utils
+      - name: Validate rule files (wrapped in a synthetic root)
+        # Wazuh rule files are FRAGMENTS: multiple top-level <group> elements
+        # with no single root, so plain xmllint rejects them. Wrap first.
+        run: |
+          set -e
+          for f in detections/local_rules.xml detections/windows/windows_rules.xml; do
+            echo "Checking $f"
+            { echo '<root>'; cat "$f"; echo '</root>'; } | xmllint --noout -
+          done
+          echo "All rule files are well-formed XML."
+
+  rule-firing-tests:
+    name: Sample-event rule tests (wazuh-logtest)
+    runs-on: ubuntu-latest
+    container:
+      image: wazuh/wazuh-manager:4.9.2
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install custom rules and start the manager
+        run: |
+          cp detections/local_rules.xml /var/ossec/etc/rules/local_rules.xml
+          /var/ossec/bin/wazuh-control start
+          # wazuh-logtest talks to analysisd over a socket and races startup, so
+          # wait for the socket to exist instead of a blind sleep.
+          for _ in $(seq 1 60); do
+            if [ -S /var/ossec/queue/sockets/logtest ]; then
+              echo "logtest socket is up"; break
+            fi
+            sleep 2
+          done
+          # Fail loudly if analysisd never came up, rather than mis-reporting as a
+          # rule assertion failure.
+          test -S /var/ossec/queue/sockets/logtest || { echo "::error::analysisd logtest socket never appeared"; exit 1; }
+      - name: Install test deps
+        run: pip3 install pyyaml
+      - name: Run sample-event assertions
+        run: python3 tests/run_rule_tests.py
+
+  sigma-lint:
+    name: Sigma rule lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install sigma-cli
+        run: pip install sigma-cli
+      - name: Lint Sigma rules
+        run: sigma check detections/sigma/
+
+  secrets-scan:
+    name: Secret scan (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

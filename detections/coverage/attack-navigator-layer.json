@@ -1,0 +1,55 @@
+{
+  "name": "SOC Automation Lab - Detection Coverage",
+  "versions": {
+    "attack": "15",
+    "navigator": "5.1.0",
+    "layer": "4.5"
+  },
+  "domain": "enterprise-attack",
+  "description": "Coverage for the SOC Automation Lab. Dark green (score 100) = custom MITRE-mapped rule authored and validated by emulated attack. Light green (score 50) = worked in the analyst casebook using built-in Wazuh telemetry (FIM, rootcheck, web ruleset, auditd, VT integration). See detections/ and casebook/.",
+  "sorting": 3,
+  "layout": {
+    "layout": "side",
+    "showID": true,
+    "showName": true
+  },
+  "hideDisabled": true,
+  "techniques": [
+    { "techniqueID": "T1110", "tactic": "credential-access", "score": 100, "comment": "Custom rules 100001/100002 (SSH brute force). Auto-contained via Wazuh firewall-drop. CASE-001, CASE-002." },
+    { "techniqueID": "T1548.003", "tactic": "privilege-escalation", "score": 100, "comment": "Custom rules 100010/100011 (sudo abuse). Host action response. CASE-006." },
+    { "techniqueID": "T1136", "tactic": "persistence", "score": 100, "comment": "Custom rule 100020 (local account created). Velociraptor confirms. CASE-003." },
+    { "techniqueID": "T1059.001", "tactic": "execution", "score": 100, "comment": "Windows rule - encoded PowerShell (PowerShell EID 4104). CASE-004 (pending endpoint)." },
+    { "techniqueID": "T1053.005", "tactic": "persistence", "score": 100, "comment": "Windows rule - scheduled task (Sysmon EID 1 / Security EID 4698)." },
+    { "techniqueID": "T1547.001", "tactic": "persistence", "score": 100, "comment": "Windows rule - Run-key persistence (Sysmon EID 13)." },
+    { "techniqueID": "T1003.001", "tactic": "credential-access", "score": 100, "comment": "Windows rule - LSASS access (Sysmon EID 10). CASE-005 (pending endpoint)." },
+    { "techniqueID": "T1078", "tactic": "initial-access", "score": 50, "comment": "Successful / anomalous SSH login (built-in SSH ruleset). CASE-007, CASE-008." },
+    { "techniqueID": "T1556", "tactic": "credential-access", "score": 50, "comment": "Critical auth file modified - sshd_config (FIM/syscheck). CASE-009." },
+    { "techniqueID": "T1505.003", "tactic": "persistence", "score": 50, "comment": "Web shell dropped in web root (FIM). CASE-010." },
+    { "techniqueID": "T1190", "tactic": "initial-access", "score": 50, "comment": "SQL injection attempt (Wazuh web ruleset). CASE-011." },
+    { "techniqueID": "T1014", "tactic": "defense-evasion", "score": 50, "comment": "Rootkit / hidden process (Wazuh rootcheck). CASE-012." },
+    { "techniqueID": "T1053.003", "tactic": "persistence", "score": 50, "comment": "Cron-based persistence (FIM on cron paths). CASE-013." },
+    { "techniqueID": "T1059.004", "tactic": "execution", "score": 50, "comment": "Reverse shell via Unix shell (auditd command monitoring). CASE-014." },
+    { "techniqueID": "T1071.001", "tactic": "command-and-control", "score": 50, "comment": "Suspicious outbound connection / C2 channel. CASE-014." },
+    { "techniqueID": "T1562.001", "tactic": "defense-evasion", "score": 50, "comment": "Logging/monitoring service stopped (auditd). CASE-015." },
+    { "techniqueID": "T1070.003", "tactic": "defense-evasion", "score": 50, "comment": "Shell history cleared - anti-forensics (auditd). CASE-016." },
+    { "techniqueID": "T1046", "tactic": "discovery", "score": 50, "comment": "Recon / dual-use tool installed (auditd / package monitoring). CASE-017." },
+    { "techniqueID": "T1105", "tactic": "command-and-control", "score": 50, "comment": "Malicious file by hash reputation (Wazuh VirusTotal integration). CASE-018." }
+  ],
+  "gradient": {
+    "colors": ["#ffffff", "#a5d6a7", "#1b5e20"],
+    "minValue": 0,
+    "maxValue": 100
+  },
+  "legendItems": [
+    { "label": "Custom validated rule (100)", "color": "#1b5e20" },
+    { "label": "Casebook via built-in telemetry (50)", "color": "#a5d6a7" }
+  ],
+  "metadata": [
+    { "name": "custom-rules", "value": "7 techniques (Linux + Windows)" },
+    { "name": "casebook-coverage", "value": "12 additional techniques" },
+    { "name": "platforms", "value": "Linux, Windows" }
+  ],
+  "showTacticRowBackground": true,
+  "tacticRowBackground": "#dddddd",
+  "selectTechniquesAcrossTactics": true
+}

@@ -1,0 +1,21 @@
+<!--
+  Wazuh <-> VirusTotal integration for file-hash reputation.
+  Place inside the <ossec_config> of the MANAGER's ossec.conf.
+
+  How it works (backs casebook CASE-018):
+    1. FIM (syscheck-fim.conf.xml) detects a new/changed file and records its
+       hash. This fires a syscheck alert (rule group syscheck).
+    2. This integration takes that hash, queries VirusTotal, and raises a
+       VirusTotal alert (rule 87105 "positives" > 0) when the file is known-bad.
+    3. The analyst works it as CASE-018: malware confirmed by hash reputation.
+
+  Requires <syscheck> with check_all/hash computation enabled on the paths of
+  interest (see syscheck-fim.conf.xml). API key is a placeholder - do not commit
+  a real key (see repo .gitignore / disclaimer).
+-->
+<integration>
+  <name>virustotal</name>
+  <api_key>REPLACE_WITH_VIRUSTOTAL_API_KEY</api_key>
+  <group>syscheck</group>
+  <alert_format>json</alert_format>
+</integration>

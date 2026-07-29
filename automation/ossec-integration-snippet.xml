@@ -1,0 +1,7 @@
+  <integration>
+    <name>custom-n8n</name>
+    <hook_url>http://192.168.100.20:5678/webhook/wazuh</hook_url>
+    <level>7</level>
+    <alert_format>json</alert_format>
+  </integration>
+
