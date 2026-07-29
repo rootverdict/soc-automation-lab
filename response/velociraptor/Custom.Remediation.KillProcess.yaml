@@ -2,7 +2,7 @@ name: Custom.Remediation.KillProcess
 description: |
   Collect-then-contain remediation. Given a process name (regex), this artifact
   FIRST records forensic evidence about matching processes (pid, path, cmdline,
-  hash, owner), THEN — only when DryRun is disabled — kills them.
+  hash, owner), THEN - only when DryRun is disabled - kills them.
 
   DryRun defaults to TRUE, so running the artifact is safe: it reports what it
   WOULD kill and takes no destructive action until an operator explicitly turns

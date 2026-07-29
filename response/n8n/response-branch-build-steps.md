@@ -1,11 +1,11 @@
-# n8n Response Branch — build steps
+# n8n Response Branch - build steps
 
 This adds an **automated host-response branch** to the existing triage workflow. Build it in
 the n8n UI (don't hand-edit the exported JSON), then re-export and commit the updated
 `automation/wazuh-triage-workflow.json`.
 
 The Wazuh firewall-drop (see `../wazuh/`) handles the *network* block on its own. This branch
-handles the *endpoint* response by launching the Velociraptor remediation artifact — and only
+handles the *endpoint* response by launching the Velociraptor remediation artifact - and only
 on a high-confidence verdict.
 
 ## The gate (fire response only when all of this is true)
@@ -14,14 +14,14 @@ on a high-confidence verdict.
 severity == 10  AND  ( vt_malicious == true  OR  rule_id ∈ {100002, 100011} )
 ```
 
-- `severity == 10` — never respond to a single low-severity event.
-- `vt_malicious` — VirusTotal flagged the public IOC, **or**
-- `rule_id ∈ {100002, 100011}` — a correlation rule already fired (brute-force / sudo abuse),
+- `severity == 10` - never respond to a single low-severity event.
+- `vt_malicious` - VirusTotal flagged the public IOC, **or**
+- `rule_id ∈ {100002, 100011}` - a correlation rule already fired (brute-force / sudo abuse),
   which is high-confidence on its own and works for internal RFC1918 traffic where VT is skipped.
 
 ## Nodes to add (after the existing verdict node)
 
-1. **IF — "response gate"**
+1. **IF - "response gate"**
    - Condition 1 (Number): `{{ $json.level }}` **equals** `10`
    - AND a nested OR for the second clause. In n8n the clean way is a small **Code** node
      before the IF that sets a single boolean, e.g.:
@@ -49,11 +49,11 @@ severity == 10  AND  ( vt_malicious == true  OR  rule_id ∈ {100002, 100011} )
      return [{ json: $json }];
      ```
 
-3. **HTTP Request — "launch Velociraptor remediation"**
+3. **HTTP Request - "launch Velociraptor remediation"**
    - Method: `POST` to the Velociraptor API endpoint that schedules a collection.
    - Body: launch `Custom.Remediation.KillProcess` against the affected client, passing
      `ProcName` (derived from the alert where applicable) and **`DryRun=true`** for the first
-     rollout — flip to `false` only once you trust the gate.
+     rollout - flip to `false` only once you trust the gate.
    - Auth: Velociraptor API credentials stored as an n8n credential (never inline in the JSON).
 
 ## Guardrails recap (mirror these in the response README)

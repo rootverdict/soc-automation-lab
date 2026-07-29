@@ -7,7 +7,7 @@ to the platform that is ~90% of real endpoint SOC work. Rules live in
 > **Status:** rules authored and mapped. Live validation against a Windows VM
 > with Atomic Red Team, plus firing screenshots, is the remaining step (needs
 > the endpoint stood up). Casebook CASE-004 / CASE-005 will be written **from
-> real evidence** once that run happens — not back-filled.
+> real evidence** once that run happens - not back-filled.
 
 ## Rules
 
@@ -19,7 +19,7 @@ to the platform that is ~90% of real endpoint SOC work. Rules live in
 | 100111 | Scheduled task registered | T1053.005 | Security EID 4698 |
 | 100120 | Registry Run-key persistence | T1547.001 | Sysmon EID 13 |
 | 100131 | Suspicious LSASS access (cred dumping) | T1003.001 | Sysmon EID 10 |
-| 100132 | LSASS access by known-good process (suppressed) | — | Sysmon EID 10 |
+| 100132 | LSASS access by known-good process (suppressed) | - | Sysmon EID 10 |
 
 Rule 100132 is a **child of 100131** (`if_sid`), not an independent rule: when a
 known-good accessor (`wininit`, `csrss`, `services`, Defender) matches, Wazuh's
@@ -33,7 +33,7 @@ process memory).
 
 1. **Sysmon** installed with the SwiftOnSecurity config
    (`sysmon64.exe -accepteula -i sysmonconfig-export.xml`).
-2. Wazuh agent forwarding **two** channels — Sysmon is not enough on its own,
+2. Wazuh agent forwarding **two** channels - Sysmon is not enough on its own,
    because EID 4104 is a PowerShell event:
 
    ```xml
@@ -58,7 +58,7 @@ Wazuh's Windows decoder exposes event fields under `win.system.*` and
 `win.eventdata.*` (the `data.` prefix seen in the dashboard JSON is dropped in
 rule `<field name>` references). Matching the event ID via
 `win.system.eventID` and the payload via `win.eventdata.*` is what makes these
-rules fire — a common first-attempt mistake is using the dashboard's `data.win.*`
+rules fire - a common first-attempt mistake is using the dashboard's `data.win.*`
 path verbatim.
 
 ## Validation plan (remaining)
@@ -68,9 +68,9 @@ test; run the atomic, confirm the alert in the Wazuh dashboard, capture a screen
 
 | Rule | Atomic test |
 |------|-------------|
-| 100100/100101 | T1059.001 — encoded command / download cradle |
-| 100110/100111 | T1053.005 — `schtasks /create` |
-| 100120 | T1547.001 — Run-key registry value |
-| 100131 | T1003.001 — LSASS access (e.g. `procdump`/`comsvcs`) |
+| 100100/100101 | T1059.001 - encoded command / download cradle |
+| 100110/100111 | T1053.005 - `schtasks /create` |
+| 100120 | T1547.001 - Run-key registry value |
+| 100131 | T1003.001 - LSASS access (e.g. `procdump`/`comsvcs`) |
 
 Portable [Sigma](../sigma) equivalents of these rules are in `detections/sigma/`.

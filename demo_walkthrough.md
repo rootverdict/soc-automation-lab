@@ -8,13 +8,13 @@ A single orchestrated run demonstrating the full pipeline: attack → detection 
 
 ## The scenario
 
-An attacker creates a local user account on the monitored endpoint (a common persistence action, MITRE T1136). The pipeline detects it, triages it automatically, and confirms it forensically — with no manual steps between the attack and the forensic collection.
+An attacker creates a local user account on the monitored endpoint (a common persistence action, MITRE T1136). The pipeline detects it, triages it automatically, and confirms it forensically - with no manual steps between the attack and the forensic collection.
 
 **Detection latency: ~3 seconds** from attack execution to alert.
 
 ## Why the internal verdict here
 
-The attack originated on the endpoint itself (private SOC IP, `192.168.100.20`). The automation correctly classified this as RFC1918 and routed it to the `INTERNAL_SKIP_ENRICHMENT` branch — there is no value in a VirusTotal reputation lookup for a private address. This is the designed behaviour, not a gap.
+The attack originated on the endpoint itself (private SOC IP, `192.168.100.20`). The automation correctly classified this as RFC1918 and routed it to the `INTERNAL_SKIP_ENRICHMENT` branch - there is no value in a VirusTotal reputation lookup for a private address. This is the designed behaviour, not a gap.
 
 ## Validating the malicious path
 

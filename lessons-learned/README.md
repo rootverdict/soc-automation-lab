@@ -1,6 +1,6 @@
 # Lessons Learned
 
-Real problems encountered during the build and how they were resolved. These are documented intentionally — the failures were where most of the actual learning happened, and they reflect the kind of troubleshooting a SOC engineer does in practice.
+Real problems encountered during the build and how they were resolved. These are documented intentionally - the failures were where most of the actual learning happened, and they reflect the kind of troubleshooting a SOC engineer does in practice.
 
 ## Networking and environment
 
@@ -17,20 +17,20 @@ Real problems encountered during the build and how they were resolved. These are
 
 ## Detection engineering
 
-- **Map decoder output to the correct base rule.** The failed-sudo detection was initially built on rule `5403` ("First time user executed sudo" — a *success*), so it never fired on real failures. The correct parent is `5401` ("Failed attempt to run sudo"). Note also that `5404` ("Three failed attempts") fires on a single composite log line, so an `if_sid: 5401` rule will not catch it. Always confirm which base rule a given log line produces before writing `if_sid`.
+- **Map decoder output to the correct base rule.** The failed-sudo detection was initially built on rule `5403` ("First time user executed sudo" - a *success*), so it never fired on real failures. The correct parent is `5401` ("Failed attempt to run sudo"). Note also that `5404` ("Three failed attempts") fires on a single composite log line, so an `if_sid: 5401` rule will not catch it. Always confirm which base rule a given log line produces before writing `if_sid`.
 - **Composite base rules can fire before your custom rule.** SSH "invalid user" failures matched base rule `5710`, not `5716`, so a custom rule scoped only to `5716` never matched and the built-in brute-force rule (`5712`) caught the event instead. Fix: widen the parent to `5710,5716,5760`.
 - **Frequency rules need a valid `if_matched_sid`.** A correlation rule using `frequency`/`timeframe` failed to load (`Missing if_matched on rule`) and took the whole manager down with it. Fix: ensure the frequency rule references a valid `if_matched_sid` and test rule changes before relying on the manager restarting cleanly.
 
 ## Automation (n8n)
 
 - **n8n 2.8 uses "Publish", not an Active toggle.** Production webhooks only register when the workflow is published; the test-listen mode is a one-shot and does not catch production POSTs. Repeated `404 webhook not registered` errors were simply an unpublished workflow.
-- **Secure-cookie block when accessed by IP.** n8n refuses to load over an insecure URL (IP instead of localhost) unless `N8N_SECURE_COOKIE=false` is set — necessary for a lab accessed from the host browser.
+- **Secure-cookie block when accessed by IP.** n8n refuses to load over an insecure URL (IP instead of localhost) unless `N8N_SECURE_COOKIE=false` is set - necessary for a lab accessed from the host browser.
 - **Object fields render as `[object Object]`.** n8n expressions on object fields (e.g. `mitre`, `agent`) display `[object Object]`; reference sub-fields (`.mitre.id`, `.agent.name`) or `JSON.stringify()` instead.
 
 ## Enrichment and notification
 
 - **RFC1918 has no public reputation.** Sending private source IPs to VirusTotal returns nothing useful and wastes API quota. The pipeline explicitly detects and routes private addresses away from enrichment.
-- **VirusTotal free tier limits.** 4 requests/minute, 500/day — fine for a lab, but a production deployment would need caching and rate-limiting/queuing.
+- **VirusTotal free tier limits.** 4 requests/minute, 500/day - fine for a lab, but a production deployment would need caching and rate-limiting/queuing.
 - **Gmail SMTP needs an App Password.** Sending mail from n8n requires 2-Step Verification enabled and a Gmail App Password; the account's normal password is rejected.
 - **Notify only on a malicious verdict.** Emailing on every alert would create alert fatigue; only the malicious branch notifies.
 
@@ -43,4 +43,4 @@ Real problems encountered during the build and how they were resolved. These are
 
 ## Resource management
 
-- **Endpoint VM memory pressure (resolved).** On the original 4 GB endpoint VM — running the Wazuh agent, n8n, Caldera, and Velociraptor together — running everything simultaneously was tight; for the end-to-end test, stopping Caldera and triggering the attack manually was a practical fallback that exercised the same detection path with less memory pressure. **Resolved** after upgrading the host to 32 GB RAM, which comfortably runs `wazuh-server`, the Linux endpoint, and a dedicated Windows/Sysmon endpoint concurrently — removing the constraint that had deferred cross-platform coverage. The workaround is kept here because the *diagnosis* (identify the memory-bound component, isolate the non-essential service) is the reusable lesson, not the specific RAM number.
+- **Endpoint VM memory pressure (resolved).** On the original 4 GB endpoint VM - running the Wazuh agent, n8n, Caldera, and Velociraptor together - running everything simultaneously was tight; for the end-to-end test, stopping Caldera and triggering the attack manually was a practical fallback that exercised the same detection path with less memory pressure. **Resolved** after upgrading the host to 32 GB RAM, which comfortably runs `wazuh-server`, the Linux endpoint, and a dedicated Windows/Sysmon endpoint concurrently - removing the constraint that had deferred cross-platform coverage. The workaround is kept here because the *diagnosis* (identify the memory-bound component, isolate the non-essential service) is the reusable lesson, not the specific RAM number.

@@ -6,9 +6,9 @@ The automation layer ingests Wazuh alerts and runs them through an enrichment-an
 
 | File | Purpose |
 |------|---------|
-| `custom-n8n.py` | Wazuh custom integration script — reads an alert and POSTs a structured payload to the n8n webhook |
+| `custom-n8n.py` | Wazuh custom integration script - reads an alert and POSTs a structured payload to the n8n webhook |
 | `ossec-integration-snippet.xml` | The `<integration>` block added to `ossec.conf` to register the script and set the forwarding threshold |
-| `wazuh-triage-workflow.json` | Exported n8n workflow (secrets scrubbed) — import into n8n to reproduce |
+| `wazuh-triage-workflow.json` | Exported n8n workflow (secrets scrubbed) - import into n8n to reproduce |
 
 ## Wazuh → n8n forwarding
 
@@ -41,25 +41,25 @@ The `<integration>` block forwards only level ≥ 7 alerts, so the noise thresho
 
 The workflow (8 nodes) implements the triage pipeline:
 
-1. **Webhook** — receives the Wazuh alert (POST `/webhook/wazuh`).
-2. **Code (JavaScript)** — IOC extraction and normalization. Parses the source IP from `full_log`, falls back to the agent IP, and flags RFC1918 / private ranges.
-3. **If — public IP?** — routes on `is_private`:
+1. **Webhook** - receives the Wazuh alert (POST `/webhook/wazuh`).
+2. **Code (JavaScript)** - IOC extraction and normalization. Parses the source IP from `full_log`, falls back to the agent IP, and flags RFC1918 / private ranges.
+3. **If - public IP?** - routes on `is_private`:
    - **false (private)** → internal branch (skip enrichment).
    - **true (public)** → enrichment branch.
-4. **HTTP Request — VirusTotal** — GET `https://www.virustotal.com/api/v3/ip_addresses/{ioc_ip}` with the `x-apikey` header.
-5. **If — malicious?** — checks `data.attributes.last_analysis_stats.malicious > 0`.
-6. **Edit Fields (verdict nodes)** — assigns one of three verdicts:
+4. **HTTP Request - VirusTotal** - GET `https://www.virustotal.com/api/v3/ip_addresses/{ioc_ip}` with the `x-apikey` header.
+5. **If - malicious?** - checks `data.attributes.last_analysis_stats.malicious > 0`.
+6. **Edit Fields (verdict nodes)** - assigns one of three verdicts:
    - `MALICIOUS` (VirusTotal flagged the IOC)
    - `CLEAN` (public IOC, no detections)
    - `INTERNAL_SKIP_ENRICHMENT` (private/RFC1918 source)
-7. **Send Email** — on the malicious branch, emails the analyst with the rule, MITRE technique, IOC, and VirusTotal malicious count.
+7. **Send Email** - on the malicious branch, emails the analyst with the rule, MITRE technique, IOC, and VirusTotal malicious count.
 
 ## Enrichment and triage decisions
 
-- **IOC extraction / normalization** — the source IP is pulled from the raw log and normalized to a single observable before any lookup.
-- **RFC1918 filtering** — private addresses are detected with a regex (`10.`, `192.168.`, `172.16–31.`) and routed away from VirusTotal, since public reputation data is meaningless for internal IPs and would waste API quota.
-- **Conditional routing** — the malicious decision uses a tunable threshold (`> 0` in the lab); a production deployment would raise this or use a weighted score, since some legitimate IPs receive one or two low-confidence detections.
-- **Notification control** — only the malicious branch notifies; clean and internal verdicts are recorded without paging the analyst.
+- **IOC extraction / normalization** - the source IP is pulled from the raw log and normalized to a single observable before any lookup.
+- **RFC1918 filtering** - private addresses are detected with a regex (`10.`, `192.168.`, `172.16–31.`) and routed away from VirusTotal, since public reputation data is meaningless for internal IPs and would waste API quota.
+- **Conditional routing** - the malicious decision uses a tunable threshold (`> 0` in the lab); a production deployment would raise this or use a weighted score, since some legitimate IPs receive one or two low-confidence detections.
+- **Notification control** - only the malicious branch notifies; clean and internal verdicts are recorded without paging the analyst.
 
 ## Reproducing
 

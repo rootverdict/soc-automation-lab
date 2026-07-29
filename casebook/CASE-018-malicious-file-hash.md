@@ -1,4 +1,4 @@
-# CASE-018 — Malicious file detected by hash reputation
+# CASE-018 - Malicious file detected by hash reputation
 
 | Field | Value |
 |-------|-------|
@@ -7,9 +7,9 @@
 | **Analyst** | L1 |
 | **Source alert** | Wazuh FIM (`554` file added) → VirusTotal hash enrichment integration flags the file |
 | **Severity** | 10 |
-| **MITRE technique** | T1105 — Ingress Tool Transfer / T1204 — User Execution |
+| **MITRE technique** | T1105 - Ingress Tool Transfer / T1204 - User Execution |
 | **Asset** | soc-endpoint (192.168.100.20) |
-| **Status** | Escalated — CRITICAL |
+| **Status** | Escalated - CRITICAL |
 | **Detection source** | Wazuh syscheck + VirusTotal integration (hash lookup on new/changed files) |
 
 ## 1. Alert summary
@@ -39,11 +39,11 @@ not heuristic). If it was merely dropped, it is a staged tool (T1105); if it was
 **confirmed infection** (T1204) and likely ties to the C2/reverse-shell case (CASE-014).
 
 ## 5. Verdict
-**True Positive — malicious file present (T1105)**, escalating to **confirmed execution (T1204)**
+**True Positive - malicious file present (T1105)**, escalating to **confirmed execution (T1204)**
 if run. Hash reputation makes this high-confidence.
 
 ## 6. Action taken
-- Preserved the file (hash + copy) as evidence — **did not delete** before scoping.
+- Preserved the file (hash + copy) as evidence - **did not delete** before scoping.
 - Recommended quarantine via Velociraptor and blocking any associated C2 IP.
 
 ## 7. Escalation / handoff

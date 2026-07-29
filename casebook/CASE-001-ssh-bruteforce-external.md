@@ -1,13 +1,13 @@
-# CASE-001 — SSH brute-force from external IP
+# CASE-001 - SSH brute-force from external IP
 
 | Field | Value |
 |-------|-------|
 | **Case ID** | CASE-001 |
 | **Date/Time (UTC)** | 2026-07-2X 14:02:11 <!-- EVIDENCE: replace with real run --> |
 | **Analyst** | L1 |
-| **Source alert** | Wazuh rule `100002` — "SSH BRUTE FORCE: 5+ failures from <srcip> in 120s" |
+| **Source alert** | Wazuh rule `100002` - "SSH BRUTE FORCE: 5+ failures from <srcip> in 120s" |
 | **Severity** | 10 |
-| **MITRE technique** | T1110 — Brute Force |
+| **MITRE technique** | T1110 - Brute Force |
 | **Asset** | soc-endpoint (192.168.100.20) |
 | **Status** | Escalated |
 
@@ -19,13 +19,13 @@ mistyped password.
 <!-- EVIDENCE: attach Wazuh alert screenshot (rule 100002, MITRE T1110) -->
 
 ## 2. Triage (the L1 questions)
-- **Internal or external?** **External** — the source is a public IP (not RFC1918).
+- **Internal or external?** **External** - the source is a public IP (not RFC1918).
 - **Known asset / user?** Target is a managed host; the attempted usernames include invalid/
-  non-existent accounts (`admin`, `test`, `oracle`) — not our real users.
+  non-existent accounts (`admin`, `test`, `oracle`) - not our real users.
 - **Expected behavior?** No. No admin or automation legitimately hammers SSH with failed logins
   from a public address against this host.
-- **Enrichment corroborates?** Yes — see §3, VirusTotal flags the IP.
-- **Correlated?** Yes — this is the *correlation* rule (5+ failures), not a single 100001 event.
+- **Enrichment corroborates?** Yes - see §3, VirusTotal flags the IP.
+- **Correlated?** Yes - this is the *correlation* rule (5+ failures), not a single 100001 event.
 - **Severity vs impact?** Severity 10 matches: external, automated credential-guessing against a
   reachable host.
 
@@ -43,7 +43,7 @@ reputation corroborates the source is known-bad. No evidence of a successful aut
 so this is an **attempt**, caught in progress.
 
 ## 5. Verdict
-**True Positive** — external, reputation-flagged source conducting an SSH brute-force; behavior
+**True Positive** - external, reputation-flagged source conducting an SSH brute-force; behavior
 and enrichment both corroborate.
 
 ## 6. Action taken

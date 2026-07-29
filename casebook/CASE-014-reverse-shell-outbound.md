@@ -1,19 +1,19 @@
-# CASE-014 — Suspicious outbound connection (reverse shell)
+# CASE-014 - Suspicious outbound connection (reverse shell)
 
 | Field | Value |
 |-------|-------|
 | **Case ID** | CASE-014 |
 | **Date/Time (UTC)** | 2026-07-2X 21:20:03 <!-- EVIDENCE: replace with real run --> |
 | **Analyst** | L1 |
-| **Source alert** | Wazuh command/audit rule — shell process with an outbound socket to an external IP (e.g. `bash`/`nc`/`python` spawning a network connection) |
+| **Source alert** | Wazuh command/audit rule - shell process with an outbound socket to an external IP (e.g. `bash`/`nc`/`python` spawning a network connection) |
 | **Severity** | 10 |
-| **MITRE technique** | T1059.004 — Command and Scripting Interpreter: Unix Shell / T1071.001 — Application Layer Protocol: Web Protocols (C2) |
+| **MITRE technique** | T1059.004 - Command and Scripting Interpreter: Unix Shell / T1071.001 - Application Layer Protocol: Web Protocols (C2) |
 | **Asset** | soc-endpoint (192.168.100.20) |
-| **Status** | Escalated — CRITICAL |
+| **Status** | Escalated - CRITICAL |
 | **Detection source** | Wazuh command monitoring / auditd (requires audit or command-wodle config) |
 
 ## 1. Alert summary
-A shell interpreter established an **outbound connection to an external IP on an unusual port** —
+A shell interpreter established an **outbound connection to an external IP on an unusual port** -
 the signature of a **reverse shell** (host dialing out to an attacker-controlled listener for
 command-and-control).
 
@@ -23,7 +23,7 @@ command-and-control).
 - **Internal or external?** Destination is external (attacker infrastructure).
 - **Known asset / user?** What process/user opened it? A `bash`/`python`/`nc` egress is abnormal
   for a server that shouldn't dial out.
-- **Expected behavior?** No — servers rarely open interactive shells to the internet.
+- **Expected behavior?** No - servers rarely open interactive shells to the internet.
 - **Enrichment corroborates?** Reputation-check the destination IP; is the port a known C2 pattern?
 - **Correlated?** Follows other compromise indicators on this host (CASE-007/010/013)?
 - **Severity vs impact?** Active C2 channel → top severity.
@@ -41,7 +41,7 @@ An interactive shell with an outbound socket to external infrastructure is a **l
 hands-on-keyboard access to the host.
 
 ## 5. Verdict
-**True Positive — command-and-control / reverse shell.** Active outbound C2 from a shell process.
+**True Positive - command-and-control / reverse shell.** Active outbound C2 from a shell process.
 
 ## 6. Action taken
 - **Containment path:** the gated n8n response branch launches the Velociraptor remediation

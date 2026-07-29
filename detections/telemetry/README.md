@@ -1,7 +1,7 @@
 # Telemetry Prerequisites
 
 The [casebook](../../casebook) works alerts from the **whole sensor stack**, not
-just the five custom rules — a real L1 does the same. This folder commits the
+just the five custom rules - a real L1 does the same. This folder commits the
 **configuration that produces that telemetry**, so every casebook case is backed
 by an artifact in the repo rather than an unstated assumption.
 
@@ -20,7 +20,7 @@ by an artifact in the repo rather than an unstated assumption.
 
 All XML fragments go inside the relevant blocks of
 `/var/ossec/etc/ossec.conf` on the **Wazuh manager** (integration, localfile) or
-the **agent** (syscheck, localfile) — merge them, don't paste blindly. The
+the **agent** (syscheck, localfile) - merge them, don't paste blindly. The
 auditd rules file goes to `/etc/audit/rules.d/` on the endpoint, then
 `augenrules --load`.
 
@@ -28,7 +28,7 @@ auditd rules file goes to `/etc/audit/rules.d/` on the endpoint, then
 
 Rootcheck ships enabled in a default Wazuh install (`<rootcheck>` block with
 `rootkit_files`/`rootkit_trojans` databases), so there's no custom artifact to
-commit — the case relies on stock behavior. Confirm it's on:
+commit - the case relies on stock behavior. Confirm it's on:
 
 ```xml
 <rootcheck>
@@ -43,4 +43,4 @@ commit — the case relies on stock behavior. Confirm it's on:
 These are the **minimum** stanzas that make the cited casebook alerts fire in
 this lab; they are intentionally narrow (specific paths, specific syscalls)
 rather than a hardened enterprise baseline. That keeps the signal high and the
-config readable — the same design stance as the rest of the lab.
+config readable - the same design stance as the rest of the lab.

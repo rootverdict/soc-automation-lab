@@ -1,4 +1,4 @@
-# CASE-013 — Cron-based persistence (scheduled job added)
+# CASE-013 - Cron-based persistence (scheduled job added)
 
 | Field | Value |
 |-------|-------|
@@ -7,14 +7,14 @@
 | **Analyst** | L1 |
 | **Source alert** | Wazuh FIM/syscheck rule `554/550` on `/etc/cron.*` or `/var/spool/cron/*` |
 | **Severity** | 8 |
-| **MITRE technique** | T1053.003 — Scheduled Task/Job: Cron |
+| **MITRE technique** | T1053.003 - Scheduled Task/Job: Cron |
 | **Asset** | soc-endpoint (192.168.100.20) |
 | **Status** | Escalated |
 | **Detection source** | Wazuh syscheck (FIM) on cron directories |
 
 ## 1. Alert summary
 A new or modified cron entry was detected under a cron directory. Attackers use cron for
-**persistence** — a scheduled job that re-establishes access or re-runs a payload on a timer.
+**persistence** - a scheduled job that re-establishes access or re-runs a payload on a timer.
 
 <!-- EVIDENCE: attach FIM alert on the cron file + the added line -->
 
@@ -22,13 +22,13 @@ A new or modified cron entry was detected under a cron directory. Attackers use 
 - **Internal or external?** Local change; concern is the *content* and *who* added it.
 - **Known asset / user?** Was the cron entry added by a sanctioned admin / package install?
 - **Expected behavior?** Legitimate software adds cron jobs; a change record or known package = benign.
-- **Enrichment corroborates?** Inspect the command the cron runs — does it call back out, decode a
+- **Enrichment corroborates?** Inspect the command the cron runs - does it call back out, decode a
   blob, or launch a shell?
 - **Correlated?** Any preceding account creation / privilege events on this host?
 - **Severity vs impact?** Persistence mechanism → escalate if the command is suspicious.
 
 ## 3. Enrichment
-- Read the **cron command line** — the payload is the whole story (e.g. a curl-to-shell,
+- Read the **cron command line** - the payload is the whole story (e.g. a curl-to-shell,
   base64-decoded script, reverse shell).
 - Identified the owning user and whether the referenced binary/script is legitimate.
 - Checked package history for a benign explanation.
@@ -41,7 +41,7 @@ shell is **persistence (T1053.003)**, not maintenance. A cron entry from a known
 benign command is a **benign true positive** to document and close.
 
 ## 5. Verdict
-**True Positive — cron persistence (T1053.003)** for a suspicious payload; **Benign True Positive**
+**True Positive - cron persistence (T1053.003)** for a suspicious payload; **Benign True Positive**
 if it resolves to a legitimate package/admin job.
 
 ## 6. Action taken

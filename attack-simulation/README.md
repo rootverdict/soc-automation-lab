@@ -42,9 +42,9 @@ Drop this file into `plugins/stockpile/data/abilities/persistence/` and restart 
 
 Detections were confirmed against Caldera-driven activity, not assumptions:
 
-- A "Create local account (Linux)" operation executed `useradd` on the endpoint and fired Wazuh rule **100020** (T1136) — confirmed end-to-end through the dashboard.
-- Discovery-tactic abilities were also run early in testing; these execute read-only commands (`whoami`, `cat /etc/passwd`, `ps`) that produce no security-relevant events, which is a useful reminder that **detection coverage must be matched to the tactic** — discovery is largely silent to a default ruleset, so persistence / credential-access abilities are needed to exercise these particular detections.
+- A "Create local account (Linux)" operation executed `useradd` on the endpoint and fired Wazuh rule **100020** (T1136) - confirmed end-to-end through the dashboard.
+- Discovery-tactic abilities were also run early in testing; these execute read-only commands (`whoami`, `cat /etc/passwd`, `ps`) that produce no security-relevant events, which is a useful reminder that **detection coverage must be matched to the tactic** - discovery is largely silent to a default ruleset, so persistence / credential-access abilities are needed to exercise these particular detections.
 
 ## Why Caldera over static log replay
 
-Running an actual operation against a live agent produces realistic event ordering, timing, and log volume. This surfaces gaps that sanitized, pre-built datasets do not — for example, confirming that the right base rule fires for a real `useradd` log line versus an assumed one.
+Running an actual operation against a live agent produces realistic event ordering, timing, and log volume. This surfaces gaps that sanitized, pre-built datasets do not - for example, confirming that the right base rule fires for a real `useradd` log line versus an assumed one.

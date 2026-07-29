@@ -1,13 +1,13 @@
-# CASE-XXX — <short title>
+# CASE-XXX - <short title>
 
 | Field | Value |
 |-------|-------|
 | **Case ID** | CASE-XXX |
 | **Date/Time (UTC)** | <detection time> |
 | **Analyst** | <name / L1> |
-| **Source alert** | Wazuh rule `<id>` — "<description>" |
+| **Source alert** | Wazuh rule `<id>` - "<description>" |
 | **Severity** | <level> |
-| **MITRE technique** | <Txxxx — name> |
+| **MITRE technique** | <Txxxx - name> |
 | **Asset** | <hostname / agent> |
 | **Status** | Open / Escalated / Closed |
 
@@ -33,13 +33,13 @@
 <The reasoning: what the evidence adds up to, and any alternative explanations considered.>
 
 ## 5. Verdict
-**<True Positive / False Positive / Benign True Positive>** — <one-line justification>
+**<True Positive / False Positive / Benign True Positive>** - <one-line justification>
 
 ## 6. Action taken
 <Containment applied (automated or manual), what was done within L1 authority.>
 
 ## 7. Escalation / handoff
-<If escalated: what L2 needs — the open question, scope, and what's already contained.
+<If escalated: what L2 needs - the open question, scope, and what's already contained.
  If closed: closure reason and any tuning recommendation.>
 
 ## 8. IOCs

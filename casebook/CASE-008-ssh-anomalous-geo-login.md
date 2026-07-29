@@ -1,4 +1,4 @@
-# CASE-008 — SSH login from anomalous location (benign true positive)
+# CASE-008 - SSH login from anomalous location (benign true positive)
 
 | Field | Value |
 |-------|-------|
@@ -7,9 +7,9 @@
 | **Analyst** | L1 |
 | **Source alert** | Wazuh rule `5715` (SSH authentication success) + geolocation/enrichment flag |
 | **Severity** | 6 |
-| **MITRE technique** | T1078 — Valid Accounts |
+| **MITRE technique** | T1078 - Valid Accounts |
 | **Asset** | soc-endpoint (192.168.100.20) |
-| **Status** | Closed — Benign True Positive |
+| **Status** | Closed - Benign True Positive |
 | **Detection source** | SSH ruleset (built-in) + GeoIP enrichment |
 
 ## 1. Alert summary
@@ -19,17 +19,17 @@ and **outside normal working hours**. No failed attempts preceded it (single cle
 <!-- EVIDENCE: attach Wazuh alert + GeoIP location -->
 
 ## 2. Triage (the L1 questions)
-- **Internal or external?** External, but a **single clean success** — not a brute-force pattern.
+- **Internal or external?** External, but a **single clean success** - not a brute-force pattern.
 - **Known asset / user?** The account is a legitimate, provisioned user.
-- **Expected behavior?** Possibly — remote work, travel, or a VPN exit node can produce an
+- **Expected behavior?** Possibly - remote work, travel, or a VPN exit node can produce an
   off-hours login from an unexpected region.
 - **Enrichment corroborates?** GeoIP shows a new region; VirusTotal shows the IP is **clean**
-  (no detections) — lowers suspicion.
+  (no detections) - lowers suspicion.
 - **Correlated?** No preceding failures, no follow-on suspicious activity.
 - **Severity vs impact?** Low-to-moderate; needs confirmation, not immediate containment.
 
 ## 3. Enrichment
-- VirusTotal on the source IP: **0 malicious** — likely a residential/VPN address, not known-bad.
+- VirusTotal on the source IP: **0 malicious** - likely a residential/VPN address, not known-bad.
 - Checked the user's recent login history for a baseline: is this region/time ever seen before?
 - No sensitive commands or privilege escalation followed the login.
 
@@ -38,11 +38,11 @@ and **outside normal working hours**. No failed attempts preceded it (single cle
 ## 4. Analysis
 The alert is accurate (a real off-hours login from a new location) but the weight of evidence
 points to **legitimate access**: valid account, clean IP reputation, no brute-force, no malicious
-follow-on. The right L1 move is **verify with the user**, not escalate blindly — but also not
+follow-on. The right L1 move is **verify with the user**, not escalate blindly - but also not
 dismiss, since anomalous-location logins are a real account-takeover indicator.
 
 ## 5. Verdict
-**Benign True Positive** — real anomalous login, confirmed as the legitimate user working
+**Benign True Positive** - real anomalous login, confirmed as the legitimate user working
 remotely. (If the user denies it → immediately reclassify as TP account takeover and escalate.)
 
 ## 6. Action taken

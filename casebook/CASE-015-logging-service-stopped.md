@@ -1,13 +1,13 @@
-# CASE-015 — Logging/monitoring service stopped (defense evasion)
+# CASE-015 - Logging/monitoring service stopped (defense evasion)
 
 | Field | Value |
 |-------|-------|
 | **Case ID** | CASE-015 |
 | **Date/Time (UTC)** | 2026-07-2X 21:25:47 <!-- EVIDENCE: replace with real run --> |
 | **Analyst** | L1 |
-| **Source alert** | Wazuh rule — agent/service state change: `auditd`/`rsyslog`/Wazuh agent stopped, or `ossec: Agent disconnected` |
+| **Source alert** | Wazuh rule - agent/service state change: `auditd`/`rsyslog`/Wazuh agent stopped, or `ossec: Agent disconnected` |
 | **Severity** | 9 |
-| **MITRE technique** | T1562.001 — Impair Defenses: Disable or Modify Tools |
+| **MITRE technique** | T1562.001 - Impair Defenses: Disable or Modify Tools |
 | **Asset** | soc-endpoint (192.168.100.20) |
 | **Status** | Escalated |
 | **Detection source** | Wazuh agent state + syslog rules |
@@ -37,11 +37,11 @@ activity (defense evasion).
 
 ## 4. Analysis
 An unexplained stop of `auditd`/logging with no maintenance record, especially near other
-suspicious activity, is **defense evasion (T1562.001)** — the attacker is reducing visibility. A
+suspicious activity, is **defense evasion (T1562.001)** - the attacker is reducing visibility. A
 stop that maps cleanly to a scheduled patch/reboot is a **benign true positive**.
 
 ## 5. Verdict
-**True Positive — impair defenses (T1562.001)** without a maintenance record; **Benign True
+**True Positive - impair defenses (T1562.001)** without a maintenance record; **Benign True
 Positive** if it maps to a known reboot/patch window.
 
 ## 6. Action taken

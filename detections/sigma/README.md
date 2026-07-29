@@ -4,7 +4,7 @@ Portable [Sigma](https://sigmahq.io/) equivalents of the lab's custom Wazuh
 detections. Sigma is a generic, vendor-neutral signature format: the same rule
 converts to a Wazuh, Splunk, Elastic, Sentinel, or Chronicle query with
 `sigma convert`. Maintaining the detection logic here as well as in
-`local_rules.xml` shows the detection is **not locked to one SIEM** — the
+`local_rules.xml` shows the detection is **not locked to one SIEM** - the
 engineering lives in the logic, not the vendor syntax.
 
 ## Rules
@@ -20,7 +20,7 @@ engineering lives in the logic, not the vendor syntax.
 | [win_lsass_access.yml](win_lsass_access.yml) | LSASS access / cred dumping | T1003.001 | 1001xx (Windows) |
 
 Files with two documents (`---` separated) hold an **atomic** rule and its
-**correlation** rule — the same two-tier model used in `local_rules.xml`
+**correlation** rule - the same two-tier model used in `local_rules.xml`
 (single event low-signal; correlated pattern high-signal).
 
 ## Validate / lint
@@ -33,7 +33,7 @@ sigma check detections/sigma/
 sigma convert -t elasticsearch -p ecs_windows detections/sigma/win_lsass_access.yml
 ```
 
-CI runs `sigma check` on this folder — see
+CI runs `sigma check` on this folder - see
 [`.github/workflows/detections-ci.yml`](../../.github/workflows/detections-ci.yml).
 
 ## Notes on portability

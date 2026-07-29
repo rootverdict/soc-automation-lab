@@ -1,16 +1,16 @@
-# CASE-011 — SQL injection attempt (web access log)
+# CASE-011 - SQL injection attempt (web access log)
 
 | Field | Value |
 |-------|-------|
 | **Case ID** | CASE-011 |
 | **Date/Time (UTC)** | 2026-07-2X 18:33:55 <!-- EVIDENCE: replace with real run --> |
 | **Analyst** | L1 |
-| **Source alert** | Wazuh web ruleset — "SQL injection attempt" (Apache/Nginx access log) |
+| **Source alert** | Wazuh web ruleset - "SQL injection attempt" (Apache/Nginx access log) |
 | **Severity** | 7 |
-| **MITRE technique** | T1190 — Exploit Public-Facing Application |
-| **Asset** | soc-endpoint (192.168.100.20) — web service |
+| **MITRE technique** | T1190 - Exploit Public-Facing Application |
+| **Asset** | soc-endpoint (192.168.100.20) - web service |
 | **Status** | Escalated |
-| **Detection source** | Wazuh web ruleset — requires the web server access log shipped to the agent |
+| **Detection source** | Wazuh web ruleset - requires the web server access log shipped to the agent |
 
 ## 1. Alert summary
 The Wazuh web ruleset flagged a request containing **SQL-injection syntax** (e.g. `' OR '1'='1`,
@@ -19,7 +19,7 @@ The Wazuh web ruleset flagged a request containing **SQL-injection syntax** (e.g
 <!-- EVIDENCE: attach Wazuh alert with the offending request URI -->
 
 ## 2. Triage (the L1 questions)
-- **Internal or external?** Check the client IP — external scanning vs an internal test.
+- **Internal or external?** Check the client IP - external scanning vs an internal test.
 - **Known asset / user?** The target is the public-facing web app.
 - **Expected behavior?** SQLi payloads are never legitimate user traffic.
 - **Enrichment corroborates?** VirusTotal / AbuseIPDB on the client IP; is it a known scanner?
@@ -28,7 +28,7 @@ The Wazuh web ruleset flagged a request containing **SQL-injection syntax** (e.g
 - **Severity vs impact?** Depends on whether the app is vulnerable and whether the injection returned data.
 
 ## 3. Enrichment
-- Reviewed the **HTTP response code** for the malicious requests — did any injection return `200`
+- Reviewed the **HTTP response code** for the malicious requests - did any injection return `200`
   with data (possible success) vs `403/404/500` (blocked/failed)?
 - Reputation-checked the source IP.
 - Counted attempts and payload variety to gauge automated vs manual.
@@ -42,7 +42,7 @@ depends on volume and any sign of success. Absent evidence of a successful extra
 **attempted** exploit; a `200` with reflected DB content would escalate it to a likely breach.
 
 ## 5. Verdict
-**True Positive — exploitation attempt (T1190).** External SQL-injection probing of the web app.
+**True Positive - exploitation attempt (T1190).** External SQL-injection probing of the web app.
 (Reclassify to confirmed exploitation if any payload returned database content.)
 
 ## 6. Action taken
