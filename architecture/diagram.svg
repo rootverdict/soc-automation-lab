@@ -20,7 +20,7 @@
   <rect width="1180" height="640" fill="#f8fafc"/>
 
   <!-- Title -->
-  <text x="40" y="48" class="title">SOC Automation Lab — Architecture</text>
+  <text x="40" y="48" class="title">SOC Automation Lab - Architecture</text>
   <text x="40" y="70" class="sub">Attack emulation → Detection (Linux + Windows) → SOAR triage &amp; enrichment → Automated response → Forensic validation</text>
 
   <!-- detection-as-code badge -->
@@ -61,14 +61,14 @@
 
   <!-- n8n big container -->
   <rect x="470" y="140" width="320" height="380" rx="12" ry="12" fill="#faf5ff" stroke="#a855f7" stroke-width="2"/>
-  <text x="630" y="168" class="tool" fill="#7e22ce" text-anchor="middle">n8n — SOAR Workflow</text>
+  <text x="630" y="168" class="tool" fill="#7e22ce" text-anchor="middle">n8n - SOAR Workflow</text>
 
   <!-- n8n inner nodes -->
   <rect x="495" y="185" width="270" height="38" rx="8" fill="#fff" stroke="#c084fc"/>
   <text x="630" y="209" class="detail" fill="#581c87" text-anchor="middle">Webhook → IOC extraction &amp; normalization</text>
 
   <rect x="495" y="233" width="270" height="38" rx="8" fill="#fff" stroke="#c084fc"/>
-  <text x="630" y="257" class="detail" fill="#581c87" text-anchor="middle">RFC1918 filter — public vs private IP</text>
+  <text x="630" y="257" class="detail" fill="#581c87" text-anchor="middle">RFC1918 filter - public vs private IP</text>
 
   <!-- private branch -->
   <rect x="495" y="285" width="125" height="50" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
