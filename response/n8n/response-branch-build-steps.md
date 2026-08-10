@@ -70,6 +70,14 @@ request for `Custom.Remediation.KillProcess` against the affected client with
 **`DryRun=Y`**. Auth is an n8n **Header Auth credential**, never an inline key in
 the JSON.
 
+> **Do not pass an empty `ProcName`.** The artifact selects with
+> `WHERE Name =~ ProcName`, so `""` is a regex matching *every* process. Under
+> `DryRun=Y` that looks harmless - it just lists everything - which is precisely
+> what makes it dangerous: the fault stays invisible until someone flips DryRun
+> off, and then it kills the host. The node omits the parameter so the artifact's
+> `this_should_match_nothing_by_default` applies. Send a real `ProcName` only for
+> alerts that actually name a process.
+
 ## Guardrails recap
 
 - Gated on `severity == 10` + a corroborating high-confidence signal.

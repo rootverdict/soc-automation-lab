@@ -66,6 +66,15 @@ is high-confidence on its own even though VirusTotal was skipped.
 10. **Dedup Guard** (Code) - per-host 5-minute suppression window held in workflow static data, so a burst of correlated alerts cannot launch a burst of remediations.
 11. **Velociraptor Remediation** (HTTP Request) - POSTs a `Custom.Remediation.KillProcess` collection for the affected client with **`DryRun=Y`**, so the artifact reports what it would kill and does nothing destructive.
 
+    `ProcName` is deliberately **not** sent. The artifact matches with
+    `WHERE Name =~ ProcName`, so an empty value is a regex that matches *every
+    process* - invisible while DryRun is on, catastrophic the moment it is turned
+    off. Omitting the parameter lets the artifact's
+    `this_should_match_nothing_by_default` apply. The alerts that currently reach
+    the gate (brute force, sudo abuse) do not name a process, so this call is an
+    evidence no-op by design; wire in a real `ProcName` only for alert types that
+    carry one, such as the reverse-shell or malicious-hash cases.
+
 > **Status:** the response branch is committed here as workflow JSON. It has not
 > yet been exercised against a live severity-10 event - import it, run the
 > brute-force simulation, and confirm the collection is scheduled exactly once

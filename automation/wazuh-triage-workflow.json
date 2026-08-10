@@ -282,7 +282,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"client_id\": \"{{ $json.agent.id }}\",\n  \"artifacts\": [\"Custom.Remediation.KillProcess\"],\n  \"specs\": [\n    {\n      \"artifact\": \"Custom.Remediation.KillProcess\",\n      \"parameters\": {\n        \"env\": [\n          { \"key\": \"ProcName\", \"value\": \"\" },\n          { \"key\": \"DryRun\", \"value\": \"Y\" }\n        ]\n      }\n    }\n  ]\n}",
+        "jsonBody": "={\n  \"client_id\": \"{{ $json.agent.id }}\",\n  \"artifacts\": [\"Custom.Remediation.KillProcess\"],\n  \"specs\": [\n    {\n      \"artifact\": \"Custom.Remediation.KillProcess\",\n      \"parameters\": {\n        \"env\": [\n          { \"key\": \"DryRun\", \"value\": \"Y\" }\n        ]\n      }\n    }\n  ]\n}",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -294,7 +294,7 @@
       "id": "d6c0a382-4f15-4b73-8e29-0b5a91f2c748",
       "name": "Velociraptor Remediation",
       "notesInFlow": true,
-      "notes": "DryRun=Y by default - collects evidence and reports what it would kill. Flip to N only once the gate is trusted.",
+      "notes": "DryRun=Y - reports what it would kill, takes no destructive action. ProcName is deliberately NOT sent: the artifact's default matches nothing, and an empty value would match every process once DryRun is turned off. Supply a specific ProcName only for alert types that actually name a process.",
       "credentials": {
         "httpHeaderAuth": {
           "id": "REPLACE_WITH_YOUR_VELOCIRAPTOR_CREDENTIAL",
