@@ -5,9 +5,13 @@ numbers**: every metric states exactly what starts and stops the clock, the
 sample size, and how it was measured - so a number can be explained in an
 interview, not just quoted.
 
-> **Fill from real runs.** Cells marked `<!-- MEASURE -->` are placeholders.
-> Replace them with values captured from your own lab runs (n ≥ 5 per metric),
-> and keep the methodology text truthful to how you actually measured.
+> **Current state:** one metric is measured (detection latency, from the
+> documented end-to-end run); the rest have a defined method and no captured
+> distribution yet. Rows are marked `measured` or `pending` below rather than
+> being filled with plausible-looking numbers - an invented median would make
+> every other figure in this repo unciteable. The measurement procedure is in
+> [§ Measurement method](#measurement-method-reproducible); running it is
+> ~20 minutes of lab time per metric.
 
 ## Definitions (what each clock measures)
 
@@ -20,13 +24,14 @@ interview, not just quoted.
 
 ## Results
 
-| Metric | n (runs) | Min | Median | Max | Notes |
-|--------|----------|-----|--------|-----|-------|
-| MTTD (account creation, rule 100020) | <!-- MEASURE --> | | ~3s | | end-to-end run measured ≈3s (see README) |
-| MTTD (SSH brute force, rule 100002) | <!-- MEASURE --> | | | | correlation adds the frequency window (5 fails/120s) |
-| MTTR auto (firewall-drop) | <!-- MEASURE --> | | | | target < 30s; from alert to iptables DROP |
-| Triage latency (n8n) | <!-- MEASURE --> | | | | webhook → verdict |
-| FP rate | 16 worked | - | - | - | 1 FP / 16 cases = 6.25% (casebook mix, not tuning-representative) |
+| Metric | State | n (runs) | Min | Median | Max | Notes |
+|--------|-------|----------|-----|--------|-----|-------|
+| MTTD (account creation, rule 100020) | **measured** (single run) | 1 | - | ~3s | - | attack → alert, from the documented end-to-end run (see README); needs n ≥ 5 for a defensible distribution |
+| MTTD (SSH brute force, rule 100002) | *pending* | - | | | | correlation adds the frequency window (5 fails/120s), so this clock is not comparable to 100020 |
+| MTTR auto (firewall-drop) | *pending* | - | | | | target < 30s; alert → iptables DROP. The response is deployed; only the timing is uncaptured |
+| Triage latency (n8n) | *pending* | - | | | | webhook → verdict node |
+| Gated response latency (Velociraptor branch) | *pending* | - | | | | branch is committed but not yet exercised - see [response/n8n/](../response/n8n/response-branch-build-steps.md) |
+| FP rate | **measured** | 16 worked | - | - | - | 1 FP / 16 cases = 6.25% (casebook mix, not tuning-representative) |
 
 ## Measurement method (reproducible)
 
@@ -47,8 +52,9 @@ t_attack=$(date -u +%s.%N); sudo useradd e2e_attacker
 
 ## Honesty notes
 
-- The **~3s MTTD** figure is from the single documented end-to-end run; the table
-  above is where the multi-run distribution goes once captured.
+- The **~3s MTTD** figure is from a *single* documented end-to-end run. It is
+  quoted in the README as "≈3s" for that reason - it is one observation, not a
+  median, and should be described that way in conversation too.
 - **FP rate here is casebook-derived** (a deliberately mixed teaching set), so it
   is *not* a production false-positive rate - it demonstrates TP/FP decisioning,
   and is labelled as such rather than dressed up as a tuning metric.
