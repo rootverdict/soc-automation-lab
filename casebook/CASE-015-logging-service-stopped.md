@@ -57,5 +57,5 @@ from other sources, (c) correlate with activity during the blind window.
 | Type | Value |
 |------|-------|
 | Service | auditd / rsyslog / wazuh-agent <!-- EVIDENCE --> |
-| Gap window | <start–end> <!-- EVIDENCE --> |
+| Gap window | <start-end> <!-- EVIDENCE --> |
 | Host | soc-endpoint (192.168.100.20) |
