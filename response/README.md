@@ -40,7 +40,17 @@ The response action is chosen by *what kind of attack* fired, not a single gener
 | `wazuh/active-response.conf.xml` | `<active-response>` blocks for `ossec.conf` - binds `firewall-drop` to the brute-force rule |
 | `wazuh/sudo-abuse-response.sh` | Custom active-response script for local sudo abuse (host action, not IP block) |
 | `velociraptor/Custom.Remediation.KillProcess.yaml` | Velociraptor artifact - collect-then-contain, DryRun default |
-| `n8n/response-branch-build-steps.md` | How to add the gated response branch to the existing n8n workflow |
+| `n8n/response-branch-build-steps.md` | Design and verification notes for the gated response branch (the branch itself ships in [`automation/wazuh-triage-workflow.json`](../automation/wazuh-triage-workflow.json)) |
+
+## What is proven vs. what is committed
+
+Being precise about this is the point of the whole repo, so it is stated here too:
+
+| Response path | Status |
+|---------------|--------|
+| Wazuh `firewall-drop` on rule 100002 (timed, auto-revert) | Configured and deployed; verify with the runbook below |
+| Custom host action on rule 100011 (log-only default) | Script committed, deployed to the agent |
+| Gated n8n → Velociraptor branch | **Committed as workflow JSON; not yet exercised against a live severity-10 event** - see [`n8n/response-branch-build-steps.md`](n8n/response-branch-build-steps.md) for the verification steps |
 
 ## Deploy & test (Linux path - no new VM required)
 

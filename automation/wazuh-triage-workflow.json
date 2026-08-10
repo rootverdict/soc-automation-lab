@@ -1,5 +1,5 @@
 {
-  "name": "My workflow",
+  "name": "Wazuh Alert Triage and Gated Response",
   "nodes": [
     {
       "parameters": {
@@ -19,7 +19,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const alert = $input.first().json.body || $input.first().json;\nconst srcip = (alert.full_log || \"\").match(/from (\\d+\\.\\d+\\.\\d+\\.\\d+)/);\n\nconst ip = \"45.155.205.233\";   // a commonly-flagged scanner IP; or any IP VT flags\n//const ip = srcip ? srcip[1] : (alert.agent?.ip || null);\n//const ip = \"8.8.8.8\";\n// RFC1918 / private check\nconst isPrivate = !ip || /^(10\\.|192\\.168\\.|172\\.(1[6-9]|2\\d|3[01])\\.)/.test(ip);\n\nreturn [{\n  json: {\n    rule_id: alert.rule_id,\n    description: alert.description,\n    level: alert.level,\n    mitre: alert.mitre,\n    agent: alert.agent,\n    ioc_ip: ip,\n    is_private: isPrivate\n  }\n}];"
+        "jsCode": "// Extract the IOC from the Wazuh alert and classify it internal vs public.\n//\n// LAB LIMITATION: every real source IP in this lab is RFC1918, so the\n// VirusTotal branch is exercised by injecting a known public IOC. Leave\n// TEST_IOC null for normal operation - see architecture/README.md, \"Network\n// note\". (Previously this override was hardcoded ON, which meant the\n// extraction below never actually ran.)\nconst TEST_IOC = null;   // e.g. \"45.155.205.233\" to exercise the malicious path\n\nconst alert = $input.first().json.body || $input.first().json;\n\n// Wazuh writes the source IP into the raw log line for sshd events.\nconst match = (alert.full_log || \"\").match(/from (\\d+\\.\\d+\\.\\d+\\.\\d+)/);\nconst ip = TEST_IOC || (match ? match[1] : (alert.agent?.ip || null));\n\n// RFC1918 + loopback. A private address has no useful public reputation, so it\n// is routed away from VirusTotal instead of burning API quota.\nconst isPrivate = !ip || /^(10\\.|127\\.|192\\.168\\.|172\\.(1[6-9]|2\\d|3[01])\\.)/.test(ip);\n\nreturn [{\n  json: {\n    rule_id: alert.rule_id,\n    description: alert.description,\n    level: alert.level,\n    mitre: alert.mitre,\n    agent: alert.agent,\n    ioc_ip: ip,\n    is_private: isPrivate\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -28,7 +28,7 @@
         0
       ],
       "id": "6260c10b-29df-43c3-8920-1e30d88b6e59",
-      "name": "Code in JavaScript"
+      "name": "Extract IOC"
     },
     {
       "parameters": {
@@ -62,7 +62,7 @@
         0
       ],
       "id": "eef8a967-80e0-4490-baff-8086ce28073c",
-      "name": "If"
+      "name": "Is Public IOC?"
     },
     {
       "parameters": {
@@ -73,8 +73,7 @@
             {
               "name": "x-apikey",
               "value": "YOUR_VT_API_KEY"
-            },
-            {}
+            }
           ]
         },
         "options": {}
@@ -86,7 +85,7 @@
         -96
       ],
       "id": "071a2039-87ea-4906-bf55-9fad2d22a3fa",
-      "name": "HTTP Request"
+      "name": "VirusTotal Lookup"
     },
     {
       "parameters": {
@@ -94,7 +93,7 @@
           "assignments": [
             {
               "id": "5d69b808-8b20-45a4-9cfc-6587da150508",
-              "name": "verdict ",
+              "name": "verdict",
               "value": "INTERNAL_SKIP_ENRICHMENT",
               "type": "string"
             }
@@ -109,7 +108,7 @@
         96
       ],
       "id": "e57f58cf-e767-4aa3-bf33-46133619fdf1",
-      "name": "Edit Fields"
+      "name": "Verdict: Internal"
     },
     {
       "parameters": {
@@ -142,7 +141,7 @@
         -96
       ],
       "id": "5d1d5744-bd9a-4224-bd11-ede9fa60d15d",
-      "name": "If1"
+      "name": "VT Malicious?"
     },
     {
       "parameters": {
@@ -165,7 +164,7 @@
         -192
       ],
       "id": "918c77a8-ed20-4292-bdb3-c71c2e00fd37",
-      "name": "Edit Fields1"
+      "name": "Verdict: Malicious"
     },
     {
       "parameters": {
@@ -188,7 +187,7 @@
         0
       ],
       "id": "306c574a-aaf1-40e5-b16a-a01d9b63d1b2",
-      "name": "Edit Fields2"
+      "name": "Verdict: Clean"
     },
     {
       "parameters": {
@@ -196,7 +195,7 @@
         "toEmail": "YOUR_EMAIL@gmail.com",
         "subject": "=[SOC ALERT] Malicious IOC - {{ $json.description }}",
         "emailFormat": "text",
-        "text": "=SOC AUTOMATED ALERT - MALICIOUS VERDICT\n\nRule: {{ $('Code in JavaScript').item.json.rule_id }} - {{ $('Code in JavaScript').item.json.description }}\nSeverity: {{ $('Code in JavaScript').item.json.level }}\nMITRE: {{ $('Code in JavaScript').item.json.mitre.id }}\nAgent: {{ $('Code in JavaScript').item.json.agent.name }} ({{ $('Code in JavaScript').item.json.agent.ip }})\nIOC IP: {{ $('Code in JavaScript').item.json.ioc_ip }}\nVirusTotal malicious count: {{ $('HTTP Request').item.json.data.attributes.last_analysis_stats.malicious }}\n\nVerdict: MALICIOUS - analyst review required.",
+        "text": "=SOC AUTOMATED ALERT - MALICIOUS VERDICT\n\nRule: {{ $('Extract IOC').item.json.rule_id }} - {{ $('Extract IOC').item.json.description }}\nSeverity: {{ $('Extract IOC').item.json.level }}\nMITRE: {{ $('Extract IOC').item.json.mitre.id }}\nAgent: {{ $('Extract IOC').item.json.agent.name }} ({{ $('Extract IOC').item.json.agent.ip }})\nIOC IP: {{ $('Extract IOC').item.json.ioc_ip }}\nVirusTotal malicious count: {{ $('VirusTotal Lookup').item.json.data.attributes.last_analysis_stats.malicious }}\n\nVerdict: MALICIOUS - analyst review required.",
         "options": {}
       },
       "type": "n8n-nodes-base.emailSend",
@@ -206,12 +205,100 @@
         -192
       ],
       "id": "8b344ae5-1f27-478f-980e-dacb09ea40dd",
-      "name": "Send an Email",
+      "name": "Notify Analyst",
       "webhookId": "2de5c30a-b8df-45c4-89d8-3d7811ce4dc2",
       "credentials": {
         "smtp": {
-          "id": "SXvIbaVypglBXS3F",
+          "id": "REPLACE_WITH_YOUR_SMTP_CREDENTIAL",
           "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// RESPONSE GATE - the \"should we contain this?\" decision.\n//\n//   severity == 10  AND  ( VirusTotal malicious  OR  a correlation rule fired )\n//\n// The correlation clause matters because a brute-force or sudo-abuse pattern is\n// high-confidence on its own, and those alerts are usually RFC1918 (so VT was\n// skipped and there is no reputation signal to lean on).\nconst alert = $('Extract IOC').first().json;\n\nconst level = Number(alert.level ?? 0);\nconst ruleId = String(alert.rule_id ?? '');\nconst verdict = String($json.verdict ?? '');\n\nconst vtMalicious = verdict === 'MALICIOUS';\nconst correlation = ['100002', '100011'].includes(ruleId);\n\nreturn [{\n  json: {\n    ...alert,\n    verdict,\n    vt_malicious: vtMalicious,\n    correlation_rule: correlation,\n    do_respond: level === 10 && (vtMalicious || correlation)\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        96
+      ],
+      "id": "c4a1e6d2-9f37-4b58-8a10-5e2d7c3b9f41",
+      "name": "Response Gate"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b7f2c918-3d64-4a52-9c81-7e0f5a2d6b93",
+              "leftValue": "={{ $json.do_respond }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1456,
+        96
+      ],
+      "id": "a913d5f7-2c48-4e69-b3d0-8f61a4c7e250",
+      "name": "Should Respond?"
+    },
+    {
+      "parameters": {
+        "jsCode": "// DEDUP GUARD - stop a response storm.\n//\n// A brute-force burst produces several correlated alerts in quick succession;\n// each one must not launch its own remediation. Workflow static data acts as a\n// short-lived per-host suppression cache.\nconst key = `resp:${$json.agent?.name ?? 'unknown'}`;\nconst now = Date.now();\nconst store = $getWorkflowStaticData('global');\nconst last = store[key] ?? 0;\n\nif (now - last < 5 * 60 * 1000) {   // 5-minute suppression window\n  return [];                        // duplicate -> drop, no response\n}\n\nstore[key] = now;\nreturn [{ json: $json }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1664,
+        96
+      ],
+      "id": "f2e8b471-6a09-4d3c-95b2-1c7d3e8f0a56",
+      "name": "Dedup Guard"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://192.168.100.20:8889/api/v1/CollectArtifact",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"client_id\": \"{{ $json.agent.id }}\",\n  \"artifacts\": [\"Custom.Remediation.KillProcess\"],\n  \"specs\": [\n    {\n      \"artifact\": \"Custom.Remediation.KillProcess\",\n      \"parameters\": {\n        \"env\": [\n          { \"key\": \"ProcName\", \"value\": \"\" },\n          { \"key\": \"DryRun\", \"value\": \"Y\" }\n        ]\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1872,
+        96
+      ],
+      "id": "d6c0a382-4f15-4b73-8e29-0b5a91f2c748",
+      "name": "Velociraptor Remediation",
+      "notesInFlow": true,
+      "notes": "DryRun=Y by default - collects evidence and reports what it would kill. Flip to N only once the gate is trusted.",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_YOUR_VELOCIRAPTOR_CREDENTIAL",
+          "name": "Velociraptor API"
         }
       }
     }
@@ -258,76 +345,126 @@
       "main": [
         [
           {
-            "node": "Code in JavaScript",
+            "node": "Extract IOC",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Code in JavaScript": {
+    "Extract IOC": {
       "main": [
         [
           {
-            "node": "If",
+            "node": "Is Public IOC?",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "If": {
+    "Is Public IOC?": {
       "main": [
         [
           {
-            "node": "HTTP Request",
+            "node": "VirusTotal Lookup",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Edit Fields",
+            "node": "Verdict: Internal",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "HTTP Request": {
+    "VirusTotal Lookup": {
       "main": [
         [
           {
-            "node": "If1",
+            "node": "VT Malicious?",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "If1": {
+    "VT Malicious?": {
       "main": [
         [
           {
-            "node": "Edit Fields1",
+            "node": "Verdict: Malicious",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Edit Fields2",
+            "node": "Verdict: Clean",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Edit Fields1": {
+    "Verdict: Malicious": {
       "main": [
         [
           {
-            "node": "Send an Email",
+            "node": "Notify Analyst",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Response Gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verdict: Internal": {
+      "main": [
+        [
+          {
+            "node": "Response Gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Response Gate": {
+      "main": [
+        [
+          {
+            "node": "Should Respond?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Should Respond?": {
+      "main": [
+        [
+          {
+            "node": "Dedup Guard",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Dedup Guard": {
+      "main": [
+        [
+          {
+            "node": "Velociraptor Remediation",
             "type": "main",
             "index": 0
           }

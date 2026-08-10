@@ -1,72 +1,96 @@
-# n8n Response Branch - build steps
+# n8n Response Branch - design and verification
 
-This adds an **automated host-response branch** to the existing triage workflow. Build it in
-the n8n UI (don't hand-edit the exported JSON), then re-export and commit the updated
-`automation/wazuh-triage-workflow.json`.
+The **automated host-response branch** is committed in
+[`../../automation/wazuh-triage-workflow.json`](../../automation/wazuh-triage-workflow.json)
+(nodes `Response Gate` → `Should Respond?` → `Dedup Guard` →
+`Velociraptor Remediation`). This document explains why it is shaped the way it
+is, and how to verify it once imported.
 
-The Wazuh firewall-drop (see `../wazuh/`) handles the *network* block on its own. This branch
-handles the *endpoint* response by launching the Velociraptor remediation artifact - and only
+The Wazuh firewall-drop (see [`../wazuh/`](../wazuh)) handles the *network* block
+independently and does not depend on this branch. This branch handles the
+*endpoint* response by launching the Velociraptor remediation artifact - and only
 on a high-confidence verdict.
 
-## The gate (fire response only when all of this is true)
+> **Validation status:** authored and committed, **not yet exercised against a
+> live severity-10 event**. Run the verification below before describing it as
+> validated. This mirrors how [`../../detections/windows/`](../../detections/windows)
+> is labelled - committed work is not the same as proven work.
+
+## The gate
 
 ```
-severity == 10  AND  ( vt_malicious == true  OR  rule_id ∈ {100002, 100011} )
+severity == 10  AND  ( verdict == MALICIOUS  OR  rule_id ∈ {100002, 100011} )
 ```
 
 - `severity == 10` - never respond to a single low-severity event.
-- `vt_malicious` - VirusTotal flagged the public IOC, **or**
-- `rule_id ∈ {100002, 100011}` - a correlation rule already fired (brute-force / sudo abuse),
-  which is high-confidence on its own and works for internal RFC1918 traffic where VT is skipped.
+- `verdict == MALICIOUS` - VirusTotal flagged the public IOC, **or**
+- `rule_id ∈ {100002, 100011}` - a correlation rule already fired (brute-force /
+  sudo abuse), which is high-confidence on its own and covers internal RFC1918
+  traffic where VT enrichment is skipped entirely.
 
-## Nodes to add (after the existing verdict node)
+Both the `MALICIOUS` and `INTERNAL_SKIP_ENRICHMENT` verdict nodes feed the gate,
+which is what makes that second clause reachable - an internal brute force never
+touches VirusTotal, so without it the correlation case could never respond.
 
-1. **IF - "response gate"**
-   - Condition 1 (Number): `{{ $json.level }}` **equals** `10`
-   - AND a nested OR for the second clause. In n8n the clean way is a small **Code** node
-     before the IF that sets a single boolean, e.g.:
-     ```javascript
-     const level = Number($json.level ?? $json.rule?.level ?? 0);
-     const ruleId = String($json.rule_id ?? $json.rule?.id ?? '');
-     const vtMalicious = Boolean($json.vt_malicious);
-     const correlation = ['100002', '100011'].includes(ruleId);
-     return [{ json: { ...$json, do_respond: level === 10 && (vtMalicious || correlation) } }];
-     ```
-     Then the IF is simply `{{ $json.do_respond }}` **is true**.
+## The nodes
 
-2. **Dedup guard (prevents a response storm)**
-   - Five brute-force alerts must not launch five remediations. Add a **Code** node using
-     workflow **static data** as a short-lived cache keyed by host:
-     ```javascript
-     const key = `resp:${$json.agent?.name ?? $json.agent ?? 'unknown'}`;
-     const now = Date.now();
-     const store = $getWorkflowStaticData('global');
-     const last = store[key] ?? 0;
-     if (now - last < 5 * 60 * 1000) {        // 5-minute suppression window
-       return [];                              // drop duplicate -> no response
-     }
-     store[key] = now;
-     return [{ json: $json }];
-     ```
+**1. `Response Gate` (Code)** - reads the alert back from `Extract IOC` (the Set
+verdict nodes emit only the verdict field) and computes a single boolean:
 
-3. **HTTP Request - "launch Velociraptor remediation"**
-   - Method: `POST` to the Velociraptor API endpoint that schedules a collection.
-   - Body: launch `Custom.Remediation.KillProcess` against the affected client, passing
-     `ProcName` (derived from the alert where applicable) and **`DryRun=true`** for the first
-     rollout - flip to `false` only once you trust the gate.
-   - Auth: Velociraptor API credentials stored as an n8n credential (never inline in the JSON).
+```javascript
+const alert = $('Extract IOC').first().json;
+const level = Number(alert.level ?? 0);
+const ruleId = String(alert.rule_id ?? '');
+const verdict = String($json.verdict ?? '');
+const vtMalicious = verdict === 'MALICIOUS';
+const correlation = ['100002', '100011'].includes(ruleId);
+// do_respond = level === 10 && (vtMalicious || correlation)
+```
 
-## Guardrails recap (mirror these in the response README)
+Collapsing the condition into one boolean in code, rather than nesting AND/OR
+inside the IF node's condition builder, keeps the logic readable and reviewable
+in the exported JSON - the IF is then simply `{{ $json.do_respond }} is true`.
 
-- Gated on `severity == 10` + high-confidence signal.
+**2. `Should Respond?` (If)** - the false branch is deliberately a dead end. A
+gated-off alert has already been triaged and (if malicious) emailed; it does not
+need a second notification.
+
+**3. `Dedup Guard` (Code)** - five brute-force alerts must not launch five
+remediations. Workflow static data holds a per-host suppression window:
+
+```javascript
+const key = `resp:${$json.agent?.name ?? 'unknown'}`;
+const store = $getWorkflowStaticData('global');
+if (Date.now() - (store[key] ?? 0) < 5 * 60 * 1000) return [];   // drop
+store[key] = Date.now();
+```
+
+**4. `Velociraptor Remediation` (HTTP Request)** - POSTs a `CollectArtifact`
+request for `Custom.Remediation.KillProcess` against the affected client with
+**`DryRun=Y`**. Auth is an n8n **Header Auth credential**, never an inline key in
+the JSON.
+
+## Guardrails recap
+
+- Gated on `severity == 10` + a corroborating high-confidence signal.
 - Dedup window prevents repeated firing per host.
-- `DryRun=true` until the gate is trusted → no destructive action during bring-up.
+- `DryRun=Y` until the gate is trusted → no destructive action during bring-up.
+- The artifact itself collects evidence *before* any containment step.
 - The network block (firewall-drop) is time-bound and auto-reverses independently.
 
-## After building
+## Verification (do this before claiming it works)
 
-1. Test with a severity-10 event and confirm the branch fires exactly once (check the
-   Velociraptor collection was scheduled with DryRun).
-2. **Export** the workflow (secrets scrubbed) and overwrite
-   `automation/wazuh-triage-workflow.json`.
-3. Update the node count / description in `automation/README.md`.
+1. Import the workflow, attach the Velociraptor credential, and publish it.
+2. Fire the SSH brute-force simulation so rule `100002` (level 10) triggers.
+3. Confirm in the n8n execution log that `Response Gate` set `do_respond: true`
+   and the branch reached `Velociraptor Remediation`.
+4. Confirm in Velociraptor that **exactly one** collection was scheduled, with
+   `DryRun` set - repeat the burst and confirm the second alert is dropped by
+   `Dedup Guard`.
+5. Negative test: fire a level-8 alert (rule `100020`, account creation) and
+   confirm the gate blocks it.
+6. Record the outcome in [`../../validation/metrics.md`](../../validation/metrics.md).
+
+If you re-shape the branch in the n8n UI, re-export and overwrite
+`automation/wazuh-triage-workflow.json`, and update the node count in
+`automation/README.md`.
