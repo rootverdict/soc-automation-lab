@@ -41,6 +41,12 @@ anywhere. On the manager it performs the real assertions.
   across many events and are validated by the live emulation runs, not
   single-line logtest. This is stated in `cases.yml`, not silently skipped.
 
+**Not covered:** the Windows rules (1001xx). They need Sysmon/PowerShell events in
+Wazuh's Windows JSON envelope rather than a syslog line, and there is no captured
+sample to test against until the Windows endpoint is stood up. Adding invented
+samples would assert the rules against a payload shape nobody has verified, so
+this gap is left open and stated rather than papered over.
+
 ## What CI checks vs. the manager
 
 - **CI** (`test-harness` job): the harness is complete and self-consistent, plus

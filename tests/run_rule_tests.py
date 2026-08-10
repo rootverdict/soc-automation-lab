@@ -10,9 +10,14 @@ and checks the rule that fires against the expectation:
 
 Exit code is non-zero if any case fails, so CI goes red on a broken rule.
 
-Requires a Wazuh install (uses /var/ossec/bin/wazuh-logtest). In CI this runs
-inside the official wazuh/wazuh-manager container - see
-.github/workflows/detections-ci.yml. Locally, run it on the manager host.
+Requires a Wazuh install (uses /var/ossec/bin/wazuh-logtest), so it runs on the
+manager host - logtest talks to analysisd over a local socket.
+
+GitHub Actions does NOT run these assertions: the `test-harness` job in
+.github/workflows/detections-ci.yml only proves the harness is complete and
+self-consistent (every case references an existing, non-empty sample and
+declares exactly one expectation, and this runner parses). The authoritative
+rule-firing check is running this script on the manager. See tests/README.md.
 """
 import os
 import re
