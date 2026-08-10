@@ -10,9 +10,16 @@ Custom detection logic authored for Wazuh, layered on top of the built-in decode
 | [`windows/`](windows) | Windows Sysmon + PowerShell rules (T1059.001, T1053.005, T1547.001, T1003.001) |
 | [`sigma/`](sigma) | Vendor-portable Sigma equivalents of every custom rule |
 | [`coverage/`](coverage) | ATT&CK Navigator layer visualizing coverage across both platforms |
-| [`telemetry/`](telemetry) | FIM / auditd / web-log / VirusTotal config that backs casebook cases 009–018 |
+| [`telemetry/`](telemetry) | FIM / auditd / web-log / VirusTotal config that backs casebook cases 009-018 |
 
 Rules are version-controlled and CI-tested - XML syntax, a sample-event test harness (rule-firing assertions run on the live Wazuh manager), Sigma lint, and a secret scan - see [`.github/workflows/detections-ci.yml`](../.github/workflows/detections-ci.yml) and [`tests/`](../tests).
+
+**Totals:** 12 Wazuh rules (5 Linux + 7 Windows, one of which is a level-0
+suppression child) and 11 portable Sigma rules across 7 files, covering **7 ATT&CK
+techniques**. The Linux rules are validated by execution; the Windows rules are
+authored and CI-checked but **not yet live-validated** - see
+[`windows/`](windows) and the
+[status table](../README.md#status---proven-vs-committed).
 
 ## Rule summary
 
@@ -31,7 +38,7 @@ The rules use two Wazuh mechanisms:
 - **`if_sid`** - inherits from a base rule. The custom rule fires whenever the parent decoder/rule matches, adding a higher severity and a MITRE tag. Example: rule 100020 fires on base rule 5902 (new user added).
 - **`if_matched_sid` with `frequency`/`timeframe`** - correlation. The rule fires only when the referenced rule has matched N times within a window. Example: rule 100002 fires when rule 100001 (single SSH failure) matches 5 times in 120 seconds.
 
-Severity is deliberately tiered: a single failure is low (level 5–7), while a correlated attack pattern is high (level 10). Only level ≥ 7 alerts are forwarded to the automation layer.
+Severity is deliberately tiered: a single failure is low (level 5-7), while a correlated attack pattern is high (level 10). Only level ≥ 7 alerts are forwarded to the automation layer.
 
 ## MITRE ATT&CK mapping
 
@@ -46,7 +53,7 @@ Severity is deliberately tiered: a single failure is low (level 5–7), while a 
 - **`same_source_ip`** on the brute-force rule (100002) ensures the correlation only fires when failures originate from a single source, not scattered noise across hosts.
 - **Tiered severity** means low-signal single events do not escalate; only correlated patterns reach high severity and trigger downstream automation.
 - **SIEM-level threshold** (level ≥ 7 forwarded) keeps low-value events out of the automation pipeline entirely.
-- A documented **suppression pattern** (a level-0 rule scoped to a trusted source IP) is the approach used to allow-list known-good hosts without disabling the detection.
+- A **suppression pattern** - a level-0 child rule (`if_sid` on the detection) that allow-lists known-good activity without disabling the detection. Implemented for real in [Windows rule 100132](windows/windows_rules.xml), which downgrades LSASS access from trusted system processes; the same shape applies to a trusted scanner source IP on the Linux side (see [CASE-002](../casebook/CASE-002-ssh-bruteforce-internal.md), where the tuning is proposed rather than applied).
 
 ## Mapping decoder output to the correct base rule
 

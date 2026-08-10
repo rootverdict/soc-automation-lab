@@ -21,7 +21,9 @@ engineering lives in the logic, not the vendor syntax.
 
 Files with two documents (`---` separated) hold an **atomic** rule and its
 **correlation** rule - the same two-tier model used in `local_rules.xml`
-(single event low-signal; correlated pattern high-signal).
+(single event low-signal; correlated pattern high-signal). That makes **11 Sigma
+rules across these 7 files**: `ssh_brute_force`, `sudo_abuse`,
+`win_powershell_encoded`, and `win_scheduled_task` each carry two documents.
 
 ## Validate / lint
 
