@@ -18,18 +18,18 @@ repo each competency is demonstrated with real work, not a claim. This is the
 | **Ticket documentation** | Consistent case template: summary → triage → enrich → verdict → action → IOCs | [CASE-TEMPLATE](../casebook/CASE-TEMPLATE.md) |
 | **Working the whole sensor stack** | Cases span custom rules, FIM, rootcheck, web ruleset, auditd, VT - not one source | [telemetry/](../detections/telemetry), casebook source map |
 | **Recognizing an attack chain** | Cases ordered initial-access → execution → persistence → C2 → anti-forensics | [casebook/README](../casebook/README.md) |
-| **SLA / time awareness** | MTTD and MTTR measured with stated methodology | [validation/metrics.md](../validation/metrics.md) |
+| **SLA / time awareness** | Detection latency measured (~3s end-to-end); MTTD/MTTR methodology defined with explicit start/stop events, distributions pending capture | [validation/metrics.md](../validation/metrics.md) |
 | **False-positive tuning judgment** | Suppression pattern (level-0 child rule / known-good accessor allow-list) documented | [detections/README](../detections/README.md), [windows rule 100132](../detections/windows/windows_rules.xml) |
 
 ## Adjacent / above-L1 signals (shows range)
 
 | Competency | Demonstrated by | Where |
 |------------|-----------------|-------|
-| **Detection engineering** | 5 Linux + 7 Windows custom rules (4 techniques), tiered severity, correct base-rule mapping | [detections/](../detections) |
+| **Detection engineering** | 12 Wazuh rules (5 Linux + 7 Windows) and 11 portable Sigma rules across 7 techniques, tiered severity, correct base-rule mapping | [detections/](../detections) |
 | **Detection-as-code** | Version control + CI (XML syntax, Sigma lint, test-harness, secret scan); rule-firing assertions run on the live manager | [CI](../.github/workflows/detections-ci.yml), [tests/](../tests) |
 | **SOAR / automation** | n8n triage workflow: extract → filter → enrich → verdict → notify → gated response | [automation/](../automation), [response/](../response) |
 | **DFIR / live forensics** | Velociraptor VQL artifact confirms activity on the host | [validation/](../validation) |
-| **Adversary emulation** | Caldera + Atomic Red Team drive real telemetry; rules validated by execution | [attack-simulation/](../attack-simulation) |
+| **Adversary emulation** | Caldera operation drives real telemetry for T1136; Linux rules validated by execution (Windows/Atomic Red Team pending - see [status](../README.md#status---proven-vs-committed)) | [attack-simulation/](../attack-simulation) |
 | **Engineering judgment** | Documented failure→fix log and explicit design decisions | [lessons-learned/](../lessons-learned) |
 
 ## How to read this as a hiring manager

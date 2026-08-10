@@ -2,10 +2,13 @@
 
 One table that ties the whole lab together: **attack → detection → MITRE →
 response → forensic evidence → casebook**. It's the fastest way for a reviewer
-to see that nothing is aspirational - every detection connects to a rule, a
-technique, a response, and a worked case.
+to see that every detection connects to a rule, a technique, a response, and a
+worked case - and, where a link in that chain is not yet proven, to see it
+labelled rather than implied. The
+[status table](../README.md#status---proven-vs-committed) is the single source of
+truth for what has been executed vs. what is committed.
 
-## Linux - custom rules (validated by emulation)
+## Linux - custom rules (validated by execution; 100020 by Caldera emulation)
 
 | Attack | Rule | MITRE | Auto-response | Forensic confirm | Casebook |
 |--------|------|-------|---------------|------------------|----------|

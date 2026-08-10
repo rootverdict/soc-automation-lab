@@ -7,7 +7,11 @@ MITRE Caldera was used to generate realistic attacker behaviour against the moni
 | File | Purpose |
 |------|---------|
 | `t1136-createuser.yml` | Custom Caldera ability that creates a local user (T1136), with a cleanup step |
-| `operation-report.json` | Exported Caldera operation report (optional) |
+
+The operation itself is evidenced by
+[`screenshots/caldera-operation-success.png`](../screenshots/caldera-operation-success.png)
+and the resulting Wazuh alert
+([`wazuh-100020-account-created.png`](../screenshots/wazuh-100020-account-created.png)).
 
 ## Setup summary
 
@@ -42,8 +46,16 @@ Drop this file into `plugins/stockpile/data/abilities/persistence/` and restart 
 
 Detections were confirmed against Caldera-driven activity, not assumptions:
 
-- A "Create local account (Linux)" operation executed `useradd` on the endpoint and fired Wazuh rule **100020** (T1136) - confirmed end-to-end through the dashboard.
+- A "Create local account (Linux)" operation executed `useradd` on the endpoint and fired Wazuh rule **100020** (T1136) - confirmed end-to-end through the dashboard. **This is the detection with full Caldera-driven validation.** The SSH brute-force and sudo-abuse rules (100001/100002/100010/100011) were validated by executing the attacks directly against the endpoint and confirming the alerts, which proves the rule logic against real log lines but is not adversary emulation - the distinction is worth keeping honest.
 - Discovery-tactic abilities were also run early in testing; these execute read-only commands (`whoami`, `cat /etc/passwd`, `ps`) that produce no security-relevant events, which is a useful reminder that **detection coverage must be matched to the tactic** - discovery is largely silent to a default ruleset, so persistence / credential-access abilities are needed to exercise these particular detections.
+
+## Windows coverage (open item)
+
+The Windows rules in [`../detections/windows/`](../detections/windows) are authored
+against Sysmon and PowerShell telemetry but have **not** been driven by emulation
+yet - the Windows endpoint stand-up and the matching Atomic Red Team tests
+(T1059.001, T1053.005, T1547.001, T1003.001) are the remaining work. Until those
+run, the rules are reviewable code, not proven detections.
 
 ## Why Caldera over static log replay
 
