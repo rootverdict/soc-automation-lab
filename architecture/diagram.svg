@@ -36,10 +36,10 @@
   <!-- Caldera -->
   <rect x="30" y="140" width="130" height="110" class="box" fill="#fef2f2" stroke="#ef4444"/>
   <text x="95" y="170" class="tool" fill="#b91c1c" text-anchor="middle">Caldera</text>
-  <text x="95" y="190" class="detail" fill="#7f1d1d" text-anchor="middle">+ Atomic Red Team</text>
+  <text x="95" y="190" class="detail" fill="#7f1d1d" text-anchor="middle">+ Atomic Red Team (planned)</text>
   <text x="95" y="207" class="detail" fill="#7f1d1d" text-anchor="middle">adversary emulation</text>
-  <text x="95" y="228" class="detail" fill="#7f1d1d" text-anchor="middle">Linux + Windows</text>
-  <text x="95" y="243" class="detail" fill="#7f1d1d" text-anchor="middle">validated by execution</text>
+  <text x="95" y="228" class="detail" fill="#7f1d1d" text-anchor="middle">Linux validated</text>
+  <text x="95" y="243" class="detail" fill="#7f1d1d" text-anchor="middle">Windows authored</text>
 
   <!-- Wazuh -->
   <rect x="240" y="140" width="180" height="110" class="box" fill="#eff6ff" stroke="#3b82f6"/>

@@ -32,6 +32,14 @@ and reflects the current pipeline (cross-platform detection, the Active-Response
 containment loop, and the detection-as-code layer). `diagram.png` is a raster
 export and should be **re-exported from the SVG** after edits to stay in sync.
 
+> **`diagram.png` is currently stale.** The SVG was corrected so the attack-
+> emulation box reads "Linux validated / Windows authored / Atomic Red Team
+> (planned)" instead of implying both platforms were validated by execution. The
+> PNG still shows the old labels - re-export it (open the SVG in a browser or
+> Inkscape and export at the same dimensions) and commit the result. Neither the
+> SVG nor the PNG yet shows the gated n8n response branch; that is worth adding
+> in the same pass.
+
 ## Network note
 
 Because the lab's monitored traffic originates entirely from the private SOC subnet, all real alert source IPs are RFC1918 addresses. These correctly route to the "internal / skip enrichment" branch. The VirusTotal enrichment branch is exercised by injecting a known public IOC during testing - a documented lab limitation rather than a gap in the logic.
