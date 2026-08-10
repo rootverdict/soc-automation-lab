@@ -7,9 +7,13 @@ take or recommend an action, and either close it or escalate - with a written re
 Detection rules prove you can *engineer* a SIEM. This casebook proves you can do the *job*:
 separate true positives from false positives, and document the reasoning an L2 can trust.
 
-> **Evidence note.** The cases below are worked examples built on this lab's **real detection
-> rules and pipeline**. Timestamps, IOCs, and screenshots marked `<!-- EVIDENCE -->` should be
-> replaced with values from your own runs so every case is backed by real evidence, not sample data.
+> **Evidence note.** Every case below is worked against this lab's **real detection rules,
+> telemetry sources, and pipeline** - the alert, the rule ID, the technique, the triage path,
+> and the response are all real. What is *not* yet captured per-case is the run-specific
+> evidence: exact timestamps, the source IPs, and the alert screenshots. Those are marked
+> `<!-- EVIDENCE -->` in the source and are being filled from individual runs rather than
+> invented, which is why the analysis reads complete but the IOC tables are still generic.
+> See the [status table](../README.md#status---proven-vs-committed).
 
 ---
 

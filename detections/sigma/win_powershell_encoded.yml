@@ -4,7 +4,8 @@ status: experimental
 description: >
   PowerShell script block containing download-cradle or encoding keywords
   commonly seen in fileless execution. Source: PowerShell Operational log,
-  EID 4104 (script-block logging). Backs casebook CASE-004.
+  EID 4104 (script-block logging). Wazuh equivalent: rule 100100. Will back
+  casebook CASE-004, which is written once the Windows endpoint is stood up.
 references:
   - https://attack.mitre.org/techniques/T1059/001/
 author: SOC Automation Lab

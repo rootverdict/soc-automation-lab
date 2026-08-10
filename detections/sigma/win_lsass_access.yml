@@ -5,7 +5,8 @@ description: >
   A process opened a handle to lsass.exe with an access mask that permits
   memory reading (0x1010 / 0x1410 / 0x143a), consistent with credential
   dumping. Source: Sysmon EID 10 (process access). Known-good accessors are
-  filtered out. Backs casebook CASE-005.
+  filtered out. Wazuh equivalent: rules 100131 / 100132. Will back casebook
+  CASE-005, which is written once the Windows endpoint is stood up.
 references:
   - https://attack.mitre.org/techniques/T1003/001/
 author: SOC Automation Lab
